@@ -13,9 +13,6 @@ enum CameraClearMode
 	kCameraClearMode_Both
 };
 
-// TODO: Add transform? so we can have a class where we can add transition effects (- lookAt)
-// like m_TransitionQueue; pop transition and lerp rotation/position to it over a duration to show difference in lighting
-
 // TODO: Texture class
 
 class Camera : public Object
@@ -28,7 +25,8 @@ class Camera : public Object
 	float m_ClearDepth;
 	CameraClearMode m_ClearMode;
 
-	BoundingFrustum m_BoundingFrustum;
+	glm::mat4 m_PerspectiveMatrix;
+	glm::mat4 m_ViewMatrix;
 
 public:
 	Camera();
@@ -37,16 +35,15 @@ public:
 	// TODO: Complete based on: https://learnopengl.com/Getting-started/Camera
 	// TODO: Complete based on: https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/camera.h
 
-	void Update(float deltaTime) override;
+	const glm::mat4 &GetPerspectiveMatrix() const;
+	void SetPerspectiveMatrix(const glm::mat4 &m);
+
+	const glm::mat4 &GetViewMatrix() const;
+	void SetViewMatrix(const glm::mat4 &m);
+
+	BoundingFrustum GetBoundingFrustum() const;
+
+	void Update(float deltaTime) override; // TODO/NOTE: How will we implement clearing, etc?
 	void Render(float deltaTime) override;
 	void Shutdown() override;
-
-	
-/*public:
-	void Render(); // -- ?? should take root renderable object
-
-	const glm::mat4x4 &GetPerspectiveMatrix() const;
-	const glm::mat4x4 &GetViewMatrix() const;
-
-	const BoundingFrustum &GetBoundingFrustum() const;*/
 };

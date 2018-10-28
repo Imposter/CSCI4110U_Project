@@ -10,6 +10,7 @@ DEFINE_EXCEPTION(ObjectNotFoundException);
 
 class Object
 {
+protected:
 	std::string m_Name;
 	bool m_IsActive;
 	Object *m_Parent;

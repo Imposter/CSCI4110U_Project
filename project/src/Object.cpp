@@ -31,6 +31,7 @@ void Object::AddChild(Object *obj)
 		obj->m_Parent->RemoveChild(obj);
 
 	obj->m_Parent = this;
+	obj->m_Transform.SetParent(&m_Transform);
 	m_Children.push_back(obj);
 }
 
@@ -50,6 +51,7 @@ void Object::RemoveChild(Object *obj)
 	}
 
 	obj->m_Parent = nullptr;
+	obj->m_Transform.SetParent(nullptr);
 }
 
 Transform *Object::GetTransform()

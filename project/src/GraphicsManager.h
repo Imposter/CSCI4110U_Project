@@ -3,7 +3,6 @@
 #include "Shader.h"
 #include "Utility/Exception.h"
 #include <glm/mat4x4.hpp>
-#include <memory>
 #include <map>
 
 // Exception definitions
@@ -26,6 +25,7 @@ public:
 	GraphicsManager(std::string shaderPath);
 	~GraphicsManager(); // Cleanup shaders, etc.
 
+	// TODO: Use camera func, or so?
 	void BeginScene(); // Should return RenderContext?
 	void EndScene();
 
