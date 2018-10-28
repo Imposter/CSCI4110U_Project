@@ -12,7 +12,7 @@ enum LogType
 
 void LogOpen(const std::string &fileName, LogType level);
 void LogClose();
-void LogWrite(LogType type, const std::string &title, const std::string &format, ...);
+void LogWrite(LogType type, const std::string &title, std::string format, ...);
 
 #define LOG_INFO(title, format, ...) LogWrite(kLogType_Info, title, format, __VA_ARGS__)
 #define LOG_ERROR(title, format, ...) LogWrite(kLogType_Error, title, format, __VA_ARGS__)

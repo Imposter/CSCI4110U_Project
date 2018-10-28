@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Plane.h"
-#include <glm/matrix.hpp>
+#include <glm/glm.hpp>
 
 enum ContainmentType
 {

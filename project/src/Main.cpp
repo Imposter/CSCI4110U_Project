@@ -1,3 +1,6 @@
+#include "GraphicsManager.h"
+#include "Object.h"
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -15,6 +18,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+// TODO: ...
+GraphicsManager *g_GraphicsManager;
+Shader *g_Shader;
+
+Object *g_CubeObject1;
+Object *g_CubeObject2;
+
+
 int windowId = 0;
 
 // projection matrix - perspective projection
@@ -23,7 +34,6 @@ glm::mat4 projectionMatrix;
 // view matrix - orient everything around our preferred view
 glm::mat4 viewMatrix;
 
-GLuint programId;
 GLuint vertexBuffer;
 GLuint indexBuffer;
 GLenum positionBufferId;
@@ -41,8 +51,6 @@ float upperArmRotationSpeed = 1.0f;
 
 void drawFinger(glm::vec3 basePosition);
 void drawCube(glm::mat4 modelMatrix, glm::vec4 colour);
-static GLuint createShaderProgram(const std::string &vertexShaderFilename, const std::string &fragmentShaderFilename);
-static GLuint createShader(GLenum shaderType, const std::string &shaderFilename);
 
 static const GLfloat vertexPositionData[] = {
 	-1.0f, -1.0f, 1.0f,  // front
@@ -70,7 +78,8 @@ static const GLushort indexData[] = {
 };
 int numVertices = 36;
 
-static void createGeometry(void) {
+static void createGeometry() 
+{
 	glGenBuffers(1, &vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositionData), vertexPositionData, GL_STATIC_DRAW);
@@ -80,8 +89,14 @@ static void createGeometry(void) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
 }
 
-static void update(void) {
+static void update() 
+{
 	int milliseconds = glutGet(GLUT_ELAPSED_TIME);
+
+	auto transform = g_CubeObject1->GetTransform();
+	auto pos = transform->GetPosition();
+	pos += transform->Right() / 100.0f;
+	transform->SetPosition(pos);
 
 	// rotate the entire model, to that we can examine it
 	yRotation += yRotationSpeed;
@@ -89,22 +104,26 @@ static void update(void) {
 	glutPostRedisplay();
 }
 
-static void render(void) {
+static void render() 
+{
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// turn on depth buffering
 	glEnable(GL_DEPTH_TEST);
 
 	// activate our shader program
-	glUseProgram(programId);
+	//glUseProgram(programId);
+	g_Shader->Apply();
 
 	// colours
-	glm::vec4 red(0.8, 0.9, 0.0, 1.0);
+	glm::vec4 red(1.0, 0.0, 0.0, 1.0);
+	glm::vec4 green(0.0, 1.0, 0.0, 1.0);
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	/*glm::mat4 modelMatrix = glm::mat4(1.0f);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(2.4f, 2.4f, 0.5f));
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -1.5f, 0.0f));
-	drawCube(modelMatrix, red);
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -1.5f, 0.0f));*/
+	drawCube(g_CubeObject1->GetTransform()->GetMatrix(), red);
+	drawCube(g_CubeObject2->GetTransform()->GetMatrix(), green);
 
 	// TODO:  Draw the fingers (and thumb)
 
@@ -112,7 +131,8 @@ static void render(void) {
 	glutSwapBuffers();
 }
 
-void drawFinger(glm::vec3 basePosition) {
+void drawFinger(glm::vec3 basePosition) 
+{
 	// colours
 	glm::vec4 colour1(0.8, 0.0, 0.5, 1.0);
 	glm::vec4 colour2(0.0, 0.0, 0.8, 1.0);
@@ -121,15 +141,14 @@ void drawFinger(glm::vec3 basePosition) {
 	// TODO:  Draw three transformed cubes to make the finger
 }
 
-void drawCube(glm::mat4 modelMatrix, glm::vec4 colour) {
+void drawCube(glm::mat4 modelMatrix, glm::vec4 colour) 
+{
 	// model-view-projection matrix
 	glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
-	const GLuint mvpMatrixId = glGetUniformLocation(programId, "u_MVP");
-	glUniformMatrix4fv(mvpMatrixId, 1, GL_FALSE, &mvp[0][0]);
+	g_Shader->GetVariable("u_MVP")->SetVecMatrixFloat4(1, false, &mvp[0][0]);
 
-	// cube colour
-	const GLuint colourId = glGetUniformLocation(programId, "u_colour");
-	glUniform4fv(colourId, 1, static_cast<GLfloat*>(&colour[0]));
+	// Cube colour
+	g_Shader->GetVariable("u_colour")->SetVecFloat4(1, &colour[0]);
 
 	// enable the vertex buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -146,7 +165,8 @@ void drawCube(glm::mat4 modelMatrix, glm::vec4 colour) {
 	glDisableVertexAttribArray(positionBufferId);
 }
 
-static void reshape(int width, int height) {
+static void reshape(int width, int height) 
+{
 	const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 	projectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
 
@@ -154,34 +174,43 @@ static void reshape(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-static void drag(int x, int y) {
+static void drag(int x, int y) 
+{
 }
 
-static void mouse(int button, int state, int x, int y) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+static void mouse(int button, int state, int x, int y) 
+{
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) 
+	{
 	}
 }
 
-static void keyboard(unsigned char key, int x, int y) {
-	if (key == 'r') {
-		if (yRotationSpeed > 0.0) {
+static void keyboard(unsigned char key, int x, int y) 
+{
+	if (key == 'r') 
+	{
+		if (yRotationSpeed > 0.0) 
+		{
 			yRotationSpeed = 0.0;
 		}
-		else {
+		else 
+		{
 			yRotationSpeed = 0.1;
 		}
 	}
-	else if (key == 27) {
+	else if (key == 27) 
+	{
 		glutDestroyWindow(windowId);
 		exit(0);
 	}
 	std::cout << "Key pressed: " << key << std::endl;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) 
+{
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-	
+
 	glutInitWindowSize(800, 600);
 	windowId = glutCreateWindow("CSCI4110U Final Project");
 
@@ -193,7 +222,8 @@ int main(int argc, char **argv) {
 	glutKeyboardFunc(&keyboard);
 
 	glewInit();
-	if (!GLEW_VERSION_2_0) {
+	if (!GLEW_VERSION_2_0) 
+	{
 		std::cerr << "OpenGL 2.0 not available" << std::endl;
 		return 1;
 	}
@@ -201,82 +231,33 @@ int main(int argc, char **argv) {
 	std::cout << "Using OpenGL " << glGetString(GL_VERSION) << std::endl;
 
 	createGeometry();
-	programId = createShaderProgram("data/shaders/vertex.glsl", "data/shaders/fragment.glsl");
 
 	// create the view matrix (position and orient the camera)
 	viewMatrix = glm::lookAt(
 		glm::vec3(0, 0, 25), // eye/camera location
 		glm::vec3(0, 0, 0),    // where to look
 		glm::vec3(0, 1, 0)     // up
-		);
+	);
+
+	// Test:
+	g_GraphicsManager = new GraphicsManager("data/shaders");
+	g_Shader = g_GraphicsManager->CompileShader("main");
+
+	// Test: 
+	g_CubeObject1 = new Object("Cube1");
+	g_CubeObject1->GetTransform()->SetScale({ 1.0f, 1.0f, 1.0f });
+	g_CubeObject1->GetTransform()->SetPosition({ 0.0f, 0.0f, 0.0f });
+	g_CubeObject1->GetTransform()->SetRotation(glm::quat({ 0.0f, glm::radians(-45.0f), 0.0f }));
+
+	g_CubeObject2 = new Object("Cube2");
+	g_CubeObject1->AddChild(g_CubeObject2);
+	g_CubeObject2->GetTransform()->SetScale({ 1.0f, 1.0f, 1.0f });
+	g_CubeObject2->GetTransform()->SetPosition({ 0.0f, 3.0f, 0.0f });
+	g_CubeObject2->GetTransform()->SetRotation(glm::quat({ 0.0f,  glm::radians(45.0f), 0.0f }));
 
 	glutMainLoop();
 
+	// TODO: Shutdown
+
 	return 0;
-}
-
-static GLuint createShader(const GLenum shaderType, const std::string &shaderFilename) {
-	// load the shader source code
-	std::ifstream fileIn(shaderFilename.c_str());
-
-	if (!fileIn.is_open()) {
-		return -1;
-	}
-
-	std::string shaderSource;
-	std::string line;
-	while (getline(fileIn, line)) {
-		shaderSource.append(line);
-		shaderSource.append("\n");
-	}
-
-	const char* sourceCode = shaderSource.c_str();
-
-	// create a shader with the specified source code
-	const GLuint shaderId = glCreateShader(shaderType);
-	glShaderSource(shaderId, 1, &sourceCode, nullptr);
-
-	// compile the shader
-	glCompileShader(shaderId);
-
-	// check if there were any compilation errors
-	int result;
-	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE) {
-		int errorLength;
-		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &errorLength);
-		char *errorMessage = new char[errorLength];
-
-		glGetShaderInfoLog(shaderId, errorLength, &errorLength, errorMessage);
-		std::cout << "Shader compilation failed: " << errorMessage << std::endl;
-
-		delete[] errorMessage;
-
-		glDeleteShader(shaderId);
-
-		return 0;
-	}
-
-	return shaderId;
-}
-
-static GLuint createShaderProgram(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename) {
-	// create and compile a shader for each
-	const GLuint vShaderId = createShader(GL_VERTEX_SHADER, vertexShaderFilename);
-	const GLuint fShaderId = createShader(GL_FRAGMENT_SHADER, fragmentShaderFilename);
-
-	// create and link the shaders into a program
-	const GLuint programId = glCreateProgram();
-	glAttachShader(programId, vShaderId);
-	glAttachShader(programId, fShaderId);
-	glLinkProgram(programId);
-	glValidateProgram(programId);
-
-	// delete the shaders
-	glDetachShader(programId, vShaderId);
-	glDetachShader(programId, fShaderId);
-	glDeleteShader(vShaderId);
-	glDeleteShader(fShaderId);
-
-	return programId;
 }

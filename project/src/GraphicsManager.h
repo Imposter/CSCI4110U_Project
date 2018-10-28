@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Exception.h"
 #include "Shader.h"
+#include "Utility/Exception.h"
 #include <glm/mat4x4.hpp>
+#include <memory>
 #include <vector>
 
 // Exception definitions
@@ -11,14 +12,14 @@ DEFINE_EXCEPTION(ShaderCompileException);
 class GraphicsManager
 {
 	std::string m_ShaderPath;
-	std::vector<Shader> m_Shaders;
-	glm::mat4x4 m_ViewMatrix;
+	std::vector<Shader *> m_Shaders;
+	glm::mat4x4 m_ViewMatrix; // NOTE: These are set by camera -- GameObject and Components are going to be different classes that do different things (Component for Logic, GameObject for game object like mesh, cam etc)
 	glm::mat4x4 m_ProjectionMatrix;
 	// TODO: Light sources ?? -- figure out from last year's code
 
 	// Shader compilation
-	unsigned int CompileShader(unsigned int type, const std::string &name, const std::string &source);
-	unsigned int CompileShader(unsigned int type, const std::string &fileName);
+	static unsigned int compileShader(unsigned int type, const void *source);
+	static unsigned int compileShader(unsigned int type, const std::string &fileName);
 
 public:
 	GraphicsManager(std::string shaderPath);
@@ -27,9 +28,8 @@ public:
 	void BeginScene(); // Should return RenderContext?
 	void EndScene();
 
-	// TODO: Set viewport, etc.?
+	// TODO: Set viewport, etc.? -- we need to merge last year code!
 
 	// TODO: Shader path
-	Shader &CompileShader(const std::string &name, const std::string &code);
-	Shader &CompileShader(const std::string &fileName);
+	Shader *CompileShader(const std::string &name);
 };

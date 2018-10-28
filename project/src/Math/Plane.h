@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
 
 // From: https://github.com/sharpdx/SharpDX
 enum PlaneIntersectionType

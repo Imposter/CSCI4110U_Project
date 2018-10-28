@@ -55,7 +55,7 @@ void LogWriteToStream(std::ostream &stream, const std::string &title, const std:
 		<< "]: " << message.c_str() << std::endl;
 }
 
-void LogWrite(LogType type, const std::string &title, const std::string &format, ...)
+void LogWrite(LogType type, const std::string &title, std::string format, ...)
 {
 	va_list arguments;
 	va_start(arguments, format);

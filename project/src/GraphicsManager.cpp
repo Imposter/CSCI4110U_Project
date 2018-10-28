@@ -1,18 +1,56 @@
 #include "GraphicsManager.h"
-#include "Log.h"
+#include <fstream>
+#include <sstream>
+#include <utility>
 
 GraphicsManager::GraphicsManager(std::string shaderPath)
-	: m_ShaderPath(shaderPath)
+	: m_ShaderPath(std::move(shaderPath))
 {
 }
 
-unsigned GraphicsManager::CompileShader(unsigned type, const std::string &name, const std::string &source)
+GraphicsManager::~GraphicsManager()
 {
-	const auto sourceCode = source.c_str();
+	// Unload shader programs
+	for (auto &shader : m_Shaders)
+	{
+		glDeleteProgram(shader->GetID());
+		delete shader;
+	}
 
+	m_Shaders.clear();
+}
+
+Shader *GraphicsManager::CompileShader(const std::string &name)
+{
+	// Create and compile a shader for each
+	const auto vShaderId = compileShader(GL_VERTEX_SHADER, m_ShaderPath + "/" + name + "_vs.glsl");
+	const auto fShaderId = compileShader(GL_FRAGMENT_SHADER, m_ShaderPath + "/" + name + "_fs.glsl");
+
+	// Create and link the shaders into a program
+	const auto programId = glCreateProgram();
+	glAttachShader(programId, vShaderId);
+	glAttachShader(programId, fShaderId);
+	glLinkProgram(programId);
+	glValidateProgram(programId);
+
+	// Delete the shaders
+	glDetachShader(programId, vShaderId);
+	glDetachShader(programId, fShaderId);
+	glDeleteShader(vShaderId);
+	glDeleteShader(fShaderId);
+
+	// Store shader
+	const auto shader = new Shader(name, programId);
+	m_Shaders.push_back(shader);
+
+	return shader;
+}
+
+unsigned int GraphicsManager::compileShader(unsigned int type, const void *source)
+{
 	// Create a shader with the specified source code
 	const auto shaderId = glCreateShader(type);
-	glShaderSource(shaderId, 1, &sourceCode, nullptr);
+	glShaderSource(shaderId, 1, reinterpret_cast<const GLchar **>(&source), nullptr);
 
 	// Compile the shader
 	glCompileShader(shaderId);
@@ -20,25 +58,36 @@ unsigned GraphicsManager::CompileShader(unsigned type, const std::string &name, 
 	// Check if there were any compilation errors
 	int result;
 	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE) {
+	if (result == GL_FALSE) 
+	{
 		int errorLength;
 		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &errorLength);
-		const auto errorMessage = new char[errorLength];
 
-		glGetShaderInfoLog(shaderId, errorLength, &errorLength, errorMessage);
-		LOG_ERROR("GraphicsManager", "Shader compilation failed %s", errorMessage);
-
-		delete[] errorMessage;
+		std::string errorMessage;
+		errorMessage.resize(errorLength);
+		glGetShaderInfoLog(shaderId, errorLength, &errorLength, const_cast<char *>(errorMessage.c_str()));
 
 		glDeleteShader(shaderId);
 
-		return 0;
+		THROW_EXCEPTION(ShaderCompileException, "Shader compilation failed: %s", errorMessage.c_str());
 	}
 
 	return shaderId;
 }
 
-unsigned GraphicsManager::CompileShader(unsigned type, const std::string &fileName)
+unsigned int GraphicsManager::compileShader(unsigned int type, const std::string &fileName)
 {
+	std::ifstream file(fileName);
+	if (!file.is_open())
+		THROW_EXCEPTION(ShaderCompileException, "File not found: %s", fileName.c_str());
 
+	std::string shaderSource;
+	std::string line;
+	while (getline(file, line)) 
+	{
+		shaderSource.append(line);
+		shaderSource.append("\n");
+	}
+
+	return compileShader(type, reinterpret_cast<const void *>(shaderSource.c_str()));
 }

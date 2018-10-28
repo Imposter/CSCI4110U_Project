@@ -1,6 +1,6 @@
 #pragma once
 
-#include "String.h"
+#include "StringUtil.h"
 #include <stdexcept>
 
 class Exception : public std::runtime_error

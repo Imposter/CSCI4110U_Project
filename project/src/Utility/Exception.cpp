@@ -1,16 +1,16 @@
-#include "Error.h"
+#include "Exception.h"
 #include <utility>
 
-Error::Error(int code, std::string type, std::string message)
+Exception::Exception(int code, std::string type, std::string message)
 	: runtime_error(""), m_Code(code), m_Type(std::move(type)), m_Message(std::move(message)) {}
 
-Error::Error(std::string type, std::string message)
+Exception::Exception(std::string type, std::string message)
 	: runtime_error(""), m_Code(-1), m_Type(std::move(type)), m_Message(std::move(message)) {}
 
-Error::Error(std::string message)
+Exception::Exception(std::string message)
 	: runtime_error(""), m_Code(-1), m_Type(""), m_Message(std::move(message)) {}
 
-const char *Error::what() const
+const char *Exception::what() const
 {
 	if (m_Code < 0 && String::Equals(m_Type, ""))
 		return m_Message.c_str();

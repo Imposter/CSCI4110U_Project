@@ -1,17 +1,21 @@
 #pragma once
 
+#include "Utility/Exception.h"
 #include <string>
 #include <vector>
 #include <GL/glew.h>
+#include <memory>
 
 class ShaderVariable
 {
-	GLuint m_ProgramID;
-	GLuint m_LocationID;
+	GLuint m_ID;
 	std::string m_Name;
 
 public:
-	ShaderVariable(GLuint programId, const std::string &name);
+	ShaderVariable(GLuint id, std::string name);
+
+	const GLuint &GetID() const;
+	const std::string &GetName() const;
 
 	void SetFloat1(float f1) const;
 	void SetFloat2(float f1, float f2) const;
@@ -54,25 +58,22 @@ public:
 	void SetVecMatrixFloat4x3(unsigned int count, bool transpose, const float *val) const;
 };
 
-enum ShaderType
-{
-	kShaderType_Vertex,
-	kShaderType_Fragment
-};
+DEFINE_EXCEPTION(ShaderVariableNotFoundException);
 
-class GraphicsManager; // ?
-class Shader // GraphicsManager should create shader
+class Shader
 {
 	std::string m_Name;
-	ShaderType m_Type;
-	GLuint m_ProgramID;
-	std::vector<ShaderVariable> m_Variables; // https://stackoverflow.com/questions/440144/in-opengl-is-there-a-way-to-get-a-list-of-all-uniforms-attribs-used-by-a-shade
-	// TODO: Store buffers?
-	//GraphicsManager m_Graphics;
+	GLuint m_ID;
+	std::vector<ShaderVariable *> m_Variables;
 
 public:
-	Shader(); // TODO: ...
+	Shader(std::string name, GLuint id);
+	~Shader();
+
+	const std::string &GetName() const;
+	const GLuint &GetID() const;
+
+	ShaderVariable *GetVariable(std::string name) const;
 
 	void Apply();
-	ShaderVariable &GetVariable(std::string name) const;
 };

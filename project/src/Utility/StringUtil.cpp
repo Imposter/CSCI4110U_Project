@@ -1,4 +1,4 @@
-#include "String.h"
+#include "StringUtil.h"
 #include <cstdarg>
 
 bool String::Equals(const std::string &str1, const std::string &str2, bool caseSensitive)
@@ -19,7 +19,7 @@ bool String::Contains(const std::string &target, const std::string &find)
 	return strstr(target.c_str(), find.c_str()) != nullptr;
 }
 
-std::string String::Format(const std::string &format, ...)
+std::string String::Format(std::string format, ...)
 {
 	va_list arguments;
 	va_start(arguments, format);
