@@ -12,20 +12,14 @@ project "GLM"
 		"GLM/glm/**.inl"
 	}
 	
-	links {
-		"opengl32.lib"
-	}
-	
 	filter "configurations:Debug"
 		defines { "DEBUG" }
-		symbols "On"
 		postbuildcommands { 
-			"{COPY} " .. _RA("GLM/glm") .. " " .. _RA("include/GLM")
+			"{COPY} " .. _RA("GLM/glm") .. " " .. _RA("include/glm")
 		}
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
-		optimize "On"
 		postbuildcommands {
-			"{COPY} " .. _RA("GLM/glm") .. " " .. _RA("include/GLM")
+			"{COPY} " .. _RA("GLM/glm") .. " " .. _RA("include/glm")
 		}

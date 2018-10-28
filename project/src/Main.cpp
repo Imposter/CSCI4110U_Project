@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 
 	// Test:
 	g_GraphicsManager = new GraphicsManager("data/shaders");
-	g_Shader = g_GraphicsManager->CompileShader("main");
+	g_Shader = g_GraphicsManager->GetShader("main");
 
 	// Test: 
 	g_CubeObject1 = new Object("Cube1");

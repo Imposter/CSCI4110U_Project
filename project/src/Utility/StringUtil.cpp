@@ -55,3 +55,16 @@ std::vector<std::string> String::Split(const std::string &str, const std::string
 
 	return output;
 }
+
+std::string String::Join(const std::vector<std::string> &v, const std::string &delimiter)
+{
+	std::string result;
+	for (size_t i = 0; i < v.size(); i++)
+	{
+		result.append(v[i]);
+		if (i != v.size() - 1)
+			result.append(delimiter);
+	}
+
+	return result;
+}

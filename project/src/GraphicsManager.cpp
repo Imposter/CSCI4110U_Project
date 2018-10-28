@@ -1,6 +1,7 @@
 #include "GraphicsManager.h"
-#include <fstream>
-#include <sstream>
+#include "Utility/FileUtil.h"
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
 #include <utility>
 
 GraphicsManager::GraphicsManager(std::string shaderPath)
@@ -11,37 +12,76 @@ GraphicsManager::GraphicsManager(std::string shaderPath)
 GraphicsManager::~GraphicsManager()
 {
 	// Unload shader programs
-	for (auto &shader : m_Shaders)
+	for (auto &pair : m_Shaders)
 	{
-		glDeleteProgram(shader->GetID());
-		delete shader;
+		glDeleteProgram(pair.second->GetID());
+		delete pair.second;
 	}
 
 	m_Shaders.clear();
 }
 
-Shader *GraphicsManager::CompileShader(const std::string &name)
+Shader *GraphicsManager::GetShader(const std::string &name)
 {
-	// Create and compile a shader for each
-	const auto vShaderId = compileShader(GL_VERTEX_SHADER, m_ShaderPath + "/" + name + "_vs.glsl");
-	const auto fShaderId = compileShader(GL_FRAGMENT_SHADER, m_ShaderPath + "/" + name + "_fs.glsl");
+	// Check if it is already loaded
+	if (m_Shaders.find(name) != m_Shaders.end())
+		return m_Shaders[name];
+
+	// Read shader meta data
+	const auto metaLines = File::ReadAllLines(m_ShaderPath + "/" + name + ".json");
+	const auto metaSource = String::Join(metaLines, "\n");
+
+	rapidjson::Document meta;
+	meta.Parse(metaSource.c_str());
+	if (meta.HasParseError())
+		THROW_EXCEPTION(InvalidShaderException, "Meta data parse error: %d", meta.GetParseError());
+
+	// Load shaders
+	std::vector<unsigned int> shaderIds;
+
+	// Compile vertex shaders
+	if (!meta.HasMember("vertex") || !meta["vertex"].IsArray())
+		THROW_EXCEPTION(InvalidShaderException, "Meta data invalid vertex shaders");
+
+	for (auto &shaderName : meta["vertex"].GetArray())
+	{
+		if (!shaderName.IsString())
+			THROW_EXCEPTION(InvalidShaderException, "Meta data invalid vertex shader");
+
+		const auto shaderId = compileShader(GL_VERTEX_SHADER, m_ShaderPath + "/" + shaderName.GetString() + "_vs.glsl");
+		shaderIds.push_back(shaderId);
+	}
+
+	// Compile fragment shaders
+	if (!meta.HasMember("fragment") || !meta["fragment"].IsArray())
+		THROW_EXCEPTION(InvalidShaderException, "Meta data invalid fragment shaders");
+
+	for (auto &shaderName : meta["fragment"].GetArray())
+	{
+		if (!shaderName.IsString())
+			THROW_EXCEPTION(InvalidShaderException, "Meta data invalid fragment shader");
+
+		const auto shaderId = compileShader(GL_FRAGMENT_SHADER, m_ShaderPath + "/" + shaderName.GetString() + "_fs.glsl");
+		shaderIds.push_back(shaderId);
+	}
 
 	// Create and link the shaders into a program
 	const auto programId = glCreateProgram();
-	glAttachShader(programId, vShaderId);
-	glAttachShader(programId, fShaderId);
+	for (auto &id : shaderIds)
+		glAttachShader(programId, id);
 	glLinkProgram(programId);
 	glValidateProgram(programId);
 
-	// Delete the shaders
-	glDetachShader(programId, vShaderId);
-	glDetachShader(programId, fShaderId);
-	glDeleteShader(vShaderId);
-	glDeleteShader(fShaderId);
+	// Delete shaders
+	for (auto &id : shaderIds)
+	{
+		glDetachShader(programId, id);
+		glDeleteShader(id);
+	}
 
 	// Store shader
 	const auto shader = new Shader(name, programId);
-	m_Shaders.push_back(shader);
+	m_Shaders.emplace(name, shader);
 
 	return shader;
 }
@@ -77,17 +117,8 @@ unsigned int GraphicsManager::compileShader(unsigned int type, const void *sourc
 
 unsigned int GraphicsManager::compileShader(unsigned int type, const std::string &fileName)
 {
-	std::ifstream file(fileName);
-	if (!file.is_open())
-		THROW_EXCEPTION(ShaderCompileException, "File not found: %s", fileName.c_str());
+	const auto lines = File::ReadAllLines(fileName);
+	const auto source = String::Join(lines, "\n");
 
-	std::string shaderSource;
-	std::string line;
-	while (getline(file, line)) 
-	{
-		shaderSource.append(line);
-		shaderSource.append("\n");
-	}
-
-	return compileShader(type, reinterpret_cast<const void *>(shaderSource.c_str()));
+	return compileShader(type, reinterpret_cast<const void *>(source.c_str()));
 }
