@@ -7,6 +7,7 @@ project "Project"
 		"../dependencies/include",
 		"../dependencies/include/GLEW",
 		"../dependencies/include/FreeGLUT",
+		"../dependencies/include/STB",
 		"src",
 	}
 	

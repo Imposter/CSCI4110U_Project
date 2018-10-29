@@ -25,6 +25,15 @@ public:
 	GraphicsManager(std::string shaderPath);
 	~GraphicsManager(); // Cleanup shaders, etc.
 
+	// TODO: CreateRenderTarget/SetRenderTarget
+
+	// TODO: Add clear depth/color here
+
+	// TODO: RenderTarget...
+
+	void Clear();
+
+
 	// TODO: Use camera func, or so?
 	void BeginScene(); // Should return RenderContext?
 	void EndScene();

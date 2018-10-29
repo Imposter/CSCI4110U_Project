@@ -3,7 +3,7 @@
 // TODO: Finish Camera, start on Texture and Light/DirectionalLight/SpotLight/PointLight classes
 
 Camera::Camera()
-	: m_FOV(60.0f), m_NearPlane(0.0f), m_FarPlane(1.0f), m_ClearColor(0.0f), m_ClearDepth(0.0f), m_ClearMode(kCameraClearMode_Both)
+	: m_FOV(CAMERA_DEFAULT_FOV), m_NearPlane(0.0f), m_FarPlane(1.0f), m_ClearColor(0.0f), m_ClearDepth(0.0f), m_ClearMode(kCameraClearMode_Both), m_PerspectiveMatrix(0.0f), m_ViewMatrix(0.0f)
 {
 }
 
@@ -35,5 +35,10 @@ BoundingFrustum Camera::GetBoundingFrustum() const
 }
 
 void Camera::Update(float deltaTime) {}
-void Camera::Render(float deltaTime) {}
+
+void Camera::Render(float deltaTime)
+{
+
+}
+
 void Camera::Shutdown() {}
