@@ -91,7 +91,7 @@ static void createGeometry()
 
 static void update() 
 {
-	int milliseconds = glutGet(GLUT_ELAPSED_TIME);
+	const auto milliseconds = glutGet(GLUT_ELAPSED_TIME);
 
 	auto transform = g_CubeObject1->GetTransform();
 	auto pos = transform->GetPosition();

@@ -25,6 +25,8 @@ public:
 	GraphicsManager(std::string shaderPath);
 	~GraphicsManager(); // Cleanup shaders, etc.
 
+	// NOTE: These return unsigned int addresses to GL pointers, RenderTexture, etc. access these?
+	// Or these return RenderTarget which takes unsigned int id as constructor param
 	// TODO: CreateRenderTarget/SetRenderTarget
 
 	// TODO: Add clear depth/color here

@@ -28,6 +28,12 @@ project "Project"
 		"opengl32.lib"
 	}
 	
+	dependson {
+		"GLM",
+		"rapidjson",
+		"STB"
+	}
+	
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "On"
