@@ -13,6 +13,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define WIDTH 1024
+#define HEIGHT 600
+#define FULLSCREEN false
+
 // Constants
 const glm::vec3 Zero(0.0f, 0.0f, 0.0f);
 const glm::vec3 Up(0.0f, 1.0f, 0.0f);
@@ -60,18 +64,24 @@ static void Update()
 
 static void WindowRender(EventArgs &args)
 {
+	// Clear buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Turn on depth buffering
 	glEnable(GL_DEPTH_TEST);
 
+	// Bind texture
+	g_Texture->Bind();
+
 	// Activate our shader program
 	g_Shader->Apply();
 
-	// TODO: Draw our texture onto a square
+	// Render
+	glBindVertexArray(g_SquareVAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-	// Make the draw buffer to display buffer (i.e. display what we have drawn)
-	glutSwapBuffers();
+	// Make the draw buffer to display buffer
+	g_Window->SwapBuffers();
 }
 
 static void WindowResize(ResizeEventArgs &args)
@@ -80,7 +90,7 @@ static void WindowResize(ResizeEventArgs &args)
 	if (args.Width == 0 || args.Height == 0)
 		return;
 
-	const float aspectRatio = static_cast<float>(args.Width) / static_cast<float>(args.Height);
+	const auto aspectRatio = static_cast<float>(args.Width) / static_cast<float>(args.Height);
 	g_ProjectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
 
 	// If using perpsective projection, update projection matrix
@@ -98,7 +108,7 @@ static void WindowKeyDown(KeyEventArgs &args)
 int main(int argc, char **argv)
 {
 	// Initialize logging
-	LogOpen("Project.log", 
+	LogOpen("Project.log",
 #ifndef DEBUG
 		kLogType_Error
 #else
@@ -115,8 +125,16 @@ int main(int argc, char **argv)
 	// Set update function
 	glutIdleFunc(&Update);
 
+	// Window config
+	const auto width = FULLSCREEN ? glutGet(GLUT_SCREEN_WIDTH) : WIDTH;
+	const auto height = FULLSCREEN ? glutGet(GLUT_SCREEN_HEIGHT) : HEIGHT;
+	auto flags = 0;
+	flags |= Window::kFlag_DoubleBuffered;
+	if (FULLSCREEN) flags |= Window::kFlag_Fullscreen;
+
 	// Create window
-	g_Window = New<Window>("CSCI4110U Final Project", 1024, 600);
+	g_Window = New<Window>("CSCI4110U Final Project", width, height, flags);
+
 	g_Window->OnRender.Add(WindowRender);
 	g_Window->OnResize.Add(WindowResize);
 	g_Window->OnKeyDown.Add(WindowKeyDown);
@@ -159,13 +177,35 @@ int main(int argc, char **argv)
 	g_Square->GetTransform()->SetRotation(glm::quat({ 0.0f, 0.0f, 0.0f }));
 
 	// Create texture
-	g_Texture = LoadTextureFromFile("data/textures/brick.jpg");
+	g_Texture = LoadTextureFromFile("data/textures/container.jpg");
 
 	// TODO/NOTE: For how Vertex classes (arrays/buffers should be done -- see: https://www.opengl.org/discussion_boards/showthread.php/198946-OpenGL-VAO-VBO-EBO-explained)
 	// TODO: Or we can do that in the mesh class like in Assignment 3 from last year...?
 	{
-		// Generate vertex arrays
-		//glGenVertexArrays()
+		// Generate vertex array
+		glGenVertexArrays(1, &g_SquareVAO);
+
+		// Generate buffers
+		glGenBuffers(1, &g_SquareVBO);
+		glGenBuffers(1, &g_SquareEBO);
+
+		// Bind vertex array
+		glBindVertexArray(g_SquareVAO);
+
+		// Bind buffers
+		glBindBuffer(GL_ARRAY_BUFFER, g_SquareVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_SquareVertices), g_SquareVertices, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_SquareEBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_SquareIndices), g_SquareIndices, GL_STATIC_DRAW);
+
+		// Set vertex attributes
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(0)); // Position
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float))); // Color
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float))); // Texture coordinate
+		glEnableVertexAttribArray(2);
 	}
 
 	// Run main loop

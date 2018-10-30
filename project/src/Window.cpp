@@ -286,6 +286,9 @@ void Window::initWindow()
 	glutSpecialFunc(&onKeySpecialDown);
 	glutSpecialUpFunc(&onKeySpecialUp);
 
+	// Set fullscreen if needed
+	if (m_Fullscreen) glutFullScreen();
+
 	// Set window as open
 	m_Open = true;
 	m_Visible = true;

@@ -112,12 +112,14 @@ struct KeyEventArgs : EventArgs
 
 class Window
 {
+public:
 	enum Flag
 	{
 		kFlag_DoubleBuffered = 1,
 		kFlag_Fullscreen = 2
 	};
 
+private:
 	static std::map<int, Key> m_SpecialKeys;
 
 	GLuint m_ID;
