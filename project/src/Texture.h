@@ -71,10 +71,11 @@ public:
 	unsigned int GetWidth() const;
 	unsigned int GetHeight() const;
 	
-	void GetData(const void *buffer, unsigned int size, unsigned int x = 0, unsigned int y = 0, unsigned int width = 0, unsigned int height = 0) const;
+	void GetData(const void *buffer, unsigned int size, unsigned int x = 0, unsigned int y = 0, unsigned int width = 0, unsigned int height = 0);
 	void SetData(unsigned int x, unsigned int y, unsigned int width, unsigned int height, const void *data);
 
 	void Bind();
+	void Activate(uint8_t index = 0);
 
 	void Lock();
 	void Unlock();

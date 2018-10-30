@@ -8,7 +8,7 @@ bool String::Equals(const std::string &str1, const std::string &str2, bool caseS
 
 	const auto size = str1.size() > str2.size() ? str2.size() : str1.size();
 	for (size_t i = 0; i < size; i++)
-		if (!caseSensitive && tolower(str1[i]) != tolower(str2[i]) || caseSensitive && str1[i] != str2[i])
+		if ((!caseSensitive && tolower(str1[i]) != tolower(str2[i])) || (caseSensitive && str1[i] != str2[i]))
 			return false;
 
 	return true;

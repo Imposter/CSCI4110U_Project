@@ -15,7 +15,7 @@ void LogOpen(const std::string &fileName, LogType level)
 	if (g_LogOpen)
 		return;
 
-	g_LogStream.open(fileName, std::ios::out | std::ios::ate);
+	g_LogStream.open(fileName, std::ios::out | std::ios::app | std::ios::ate);
 	g_LogType = level;
 	g_LogOpen = true;
 

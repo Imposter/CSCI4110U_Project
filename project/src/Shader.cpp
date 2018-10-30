@@ -194,7 +194,7 @@ Shader::Shader(std::string name, GLuint id)
 	GLint count;
 	glGetProgramiv(m_ID, GL_ACTIVE_UNIFORMS, &count);
 
-	LOG_TRACE("Shader", "Shader %s has %d variables", name.c_str(), count);
+	LOG_TRACE("Shader", "Shader %s has %d variable(s)", m_Name.c_str(), count);
 
 	for (auto i = 0; i < count; i++)
 	{ 

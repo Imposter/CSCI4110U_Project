@@ -1,27 +1,27 @@
 #include "Memory.h"
 #include "Log.h"
+#include "Window.h"
 #include "GraphicsManager.h"
 #include "Object.h"
 #include "TextureUtil.h"
 #include "Texture.h"
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <stack>
-#include <cmath>
 #include <GL/glew.h>
-#include <GL/glut.h>
 #include <GL/freeglut.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// Constants
+const glm::vec3 Zero(0.0f, 0.0f, 0.0f);
+const glm::vec3 Up(0.0f, 1.0f, 0.0f);
+
 // Program variables
-int g_WindowID = 0;
 glm::mat4 g_ViewMatrix;
 glm::mat4 g_ProjectionMatrix;
+
+Window *g_Window;
 
 GraphicsManager *g_GraphicsManager;
 Shader *g_Shader;
@@ -49,16 +49,16 @@ GLuint g_SquareVAO; // Vertex array -- stores vertex format (position, color, te
 GLuint g_SquareVBO; // Vertex buffer
 GLuint g_SquareEBO; // Index buffer
 
-static void update()
+static void Update()
 {
 	const auto milliseconds = glutGet(GLUT_ELAPSED_TIME);
 
-
+	// TODO: Transform updates
 
 	glutPostRedisplay();
 }
 
-static void render()
+static void WindowRender(EventArgs &args)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -74,73 +74,76 @@ static void render()
 	glutSwapBuffers();
 }
 
-static void reshape(int width, int height)
+static void WindowResize(ResizeEventArgs &args)
 {
 	// Divide by zero
-	if (width == 0 || height == 0)
+	if (args.Width == 0 || args.Height == 0)
 		return;
 
-	const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+	const float aspectRatio = static_cast<float>(args.Width) / static_cast<float>(args.Height);
 	g_ProjectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
 
 	// If using perpsective projection, update projection matrix
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, args.Width, args.Height);
 }
 
-static void drag(int x, int y)
+static void WindowKeyDown(KeyEventArgs &args)
 {
-}
-
-static void mouse(int button, int state, int x, int y)
-{
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
-	{
-	}
-}
-
-static void keyboard(unsigned char key, int x, int y)
-{
-	if (key == VK_ESCAPE)
+	if (args.Value == kKey_Escape)
 	{
 		glutLeaveMainLoop();
 	}
-
-	std::cout << "Key pressed: " << key << std::endl;
 }
 
 int main(int argc, char **argv)
 {
+	// Initialize logging
+	LogOpen("Project.log", 
+#ifndef DEBUG
+		kLogType_Error
+#else
+		kLogType_Trace
+#endif
+	);
+
 	// Initialize memory subsystem
-	Memory::Initialize();
+	MemoryInitialize();
 
+	// Initialize GLUT
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 
-	glutInitWindowSize(800, 600);
-	g_WindowID = glutCreateWindow("CSCI4110U Final Project");
+	// Set update function
+	glutIdleFunc(&Update);
 
-	glutIdleFunc(&update);
-	glutDisplayFunc(&render);
-	glutReshapeFunc(&reshape);
-	glutMotionFunc(&drag);
-	glutMouseFunc(&mouse);
-	glutKeyboardFunc(&keyboard);
+	// Create window
+	g_Window = New<Window>("CSCI4110U Final Project", 1024, 600);
+	g_Window->OnRender.Add(WindowRender);
+	g_Window->OnResize.Add(WindowResize);
+	g_Window->OnKeyDown.Add(WindowKeyDown);
 
+	// Initialize OpenGL
 	glewInit();
 	if (!GLEW_VERSION_2_0)
 	{
-		std::cerr << "OpenGL 2.0 not available" << std::endl;
+		LOG_ERROR("Main", "OpenGL 2.0 not available");
+
+		// Delete window
+		Delete(g_Window);
+
+		// Shutdown memory subsystem
+		MemoryShutdown();
+
+		// Close log
+		LogClose();
+
 		return 1;
 	}
-	std::cout << "Using GLEW " << glewGetString(GLEW_VERSION) << std::endl;
-	std::cout << "Using OpenGL " << glGetString(GL_VERSION) << std::endl;
+
+	LOG_INFO("Main", "Using GLEW %s", glewGetString(GLEW_VERSION));
+	LOG_INFO("Main", "Using OpenGL %s", glGetString(GL_VERSION));
 
 	// Create the view matrix (position and orient the camera)
-	g_ViewMatrix = glm::lookAt(
-		glm::vec3(0, 0, 25),	// eye/camera location
-		glm::vec3(0, 0, 0),		// where to look
-		glm::vec3(0, 1, 0)		// up
-	);
+	g_ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 25.0f), Zero, Up);
 
 	// Create root object
 	g_Root = New<Object>("Root");
@@ -168,9 +171,6 @@ int main(int argc, char **argv)
 	// Run main loop
 	glutMainLoop();
 
-	// Close window
-	glutDestroyWindow(g_WindowID);
-
 	try
 	{
 		// Delete texture
@@ -180,8 +180,14 @@ int main(int argc, char **argv)
 		Delete(g_Root);
 		Delete(g_GraphicsManager);
 
+		// Close window
+		Delete(g_Window);
+
 		// Shutdown memory subsystem
-		Memory::Shutdown();
+		MemoryShutdown();
+
+		// Close log
+		LogClose();
 	}
 	catch (MemoryLeakException &ex)
 	{
@@ -189,7 +195,10 @@ int main(int argc, char **argv)
 		LOG_TRACE("Main", ex.what());
 
 		// Find out what leaked
-		Memory::Debug();
+		MemoryDebug();
+
+		// Close log
+		LogClose();
 
 		// Exit with error
 		return 1;

@@ -40,8 +40,14 @@ unsigned int Texture::GetHeight() const
 	return m_Height;
 }
 
-void Texture::GetData(const void *buffer, unsigned int size, unsigned int x, unsigned int y, unsigned int width, unsigned int height) const
+void Texture::GetData(const void *buffer, unsigned int size, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 {
+	if (m_Lock.try_lock()) 
+	{
+		m_Lock.unlock();
+		THROW_EXCEPTION(TextureNotLockedException, "Texture must be locked to get data");
+	}
+
 	// Check parameters
 	if (width > m_Width)
 		return;
@@ -52,7 +58,7 @@ void Texture::GetData(const void *buffer, unsigned int size, unsigned int x, uns
 	// Default parameters
 	if (!width) width = m_Width;
 	if (!height) height = m_Height;
-
+	
 	glBindTexture(GL_TEXTURE_2D, m_ID);
 	glGetTextureSubImage(GL_TEXTURE_2D, 0, x, y, 0, width, height, 0, m_Format, GL_UNSIGNED_BYTE, size, &buffer);
 }
@@ -71,6 +77,12 @@ void Texture::SetData(unsigned int x, unsigned int y, unsigned int width, unsign
 
 void Texture::Bind()
 {
+	glBindTexture(GL_TEXTURE_2D, m_ID);
+}
+
+void Texture::Activate(uint8_t index)
+{
+	glActiveTexture(GL_TEXTURE0 + index);
 	glBindTexture(GL_TEXTURE_2D, m_ID);
 }
 
