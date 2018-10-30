@@ -5,7 +5,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#ifndef CAMERA_DEFAULT_FOV
 #define CAMERA_DEFAULT_FOV 60.0f
+#endif
 
 enum CameraClearMode
 {

@@ -9,6 +9,8 @@ class Exception : public std::runtime_error
 	std::string m_Type;
 	std::string m_Message;
 
+	std::string m_What;
+
 public:
 	Exception(int code, std::string type, std::string message);
 	Exception(std::string type, std::string message);

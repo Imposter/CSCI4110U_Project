@@ -1,6 +1,11 @@
 #include "FileUtil.h"
 #include <fstream>
 
+bool File::Exists(const std::string &path)
+{
+	return std::ifstream(path).is_open();
+}
+
 std::vector<std::string> File::ReadAllLines(const std::string &path)
 {
 	std::ifstream file(path);

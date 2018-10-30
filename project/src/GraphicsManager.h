@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Texture.h"
 #include "Shader.h"
 #include "Utility/Exception.h"
 #include <glm/mat4x4.hpp>
@@ -12,7 +13,7 @@ DEFINE_EXCEPTION(ShaderCompileException);
 class GraphicsManager
 {
 	std::string m_ShaderPath;
-	std::map<std::string, Shader *> m_Shaders;
+	std::map<std::string, Shader *> m_Shaders; // TODO/NOTE: Only shaders are managed by GraphicsManager?
 	glm::mat4x4 m_ViewMatrix; // NOTE: These are set by camera -- GameObject and Components are going to be different classes that do different things (Component for Logic, GameObject for game object like mesh, cam etc)
 	glm::mat4x4 m_ProjectionMatrix;
 	// TODO: Light sources ?? -- figure out from last year's code
@@ -23,7 +24,9 @@ class GraphicsManager
 
 public:
 	GraphicsManager(std::string shaderPath);
-	~GraphicsManager(); // Cleanup shaders, etc.
+	~GraphicsManager();
+
+	
 
 	// NOTE: These return unsigned int addresses to GL pointers, RenderTexture, etc. access these?
 	// Or these return RenderTarget which takes unsigned int id as constructor param

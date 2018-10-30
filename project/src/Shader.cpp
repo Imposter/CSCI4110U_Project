@@ -1,5 +1,6 @@
 #include "Shader.h"
 #include "Log.h"
+#include "Memory.h"
 #include <utility>
 
 ShaderVariable::ShaderVariable(GLuint id, std::string name)
@@ -211,14 +212,14 @@ Shader::Shader(std::string name, GLuint id)
 		LOG_TRACE("Shader", "- Variable %s of type %d", varName.c_str(), type);
 
 		// Store
-		m_Variables.push_back(new ShaderVariable(i, varName));
+		m_Variables.push_back(New<ShaderVariable>(i, varName));
 	}
 }
 
 Shader::~Shader()
 {
 	for (auto &var : m_Variables)
-		delete var;
+		Delete(var);
 
 	m_Variables.clear();
 }

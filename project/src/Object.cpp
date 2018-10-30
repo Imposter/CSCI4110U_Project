@@ -62,7 +62,7 @@ Transform *Object::GetTransform()
 Object::~Object()
 {
 	for (auto &obj : m_Children)
-		delete obj;
+		Delete(obj);
 
 	m_Children.clear();
 }

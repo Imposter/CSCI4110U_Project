@@ -1,4 +1,5 @@
 #include "GraphicsManager.h"
+#include "Memory.h"
 #include "Utility/FileUtil.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
@@ -16,7 +17,7 @@ GraphicsManager::~GraphicsManager()
 	for (auto &pair : m_Shaders)
 	{
 		glDeleteProgram(pair.second->GetID());
-		delete pair.second;
+		Delete(pair.second);
 	}
 
 	m_Shaders.clear();
@@ -81,7 +82,7 @@ Shader *GraphicsManager::GetShader(const std::string &name)
 	}
 
 	// Store shader
-	const auto shader = new Shader(name, programId);
+	const auto shader = New<Shader>(name, programId);
 	m_Shaders.emplace(name, shader);
 
 	return shader;

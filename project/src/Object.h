@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Transform.h"
+#include "Memory.h"
 #include "Utility/Exception.h"
 #include <string>
 #include <vector>
@@ -40,7 +41,7 @@ public:
 	template<typename TObj = Object, typename... TArgs>
 	TObj *CreateChild(TArgs... args)
 	{
-		auto obj = new TObj(std::forward<TArgs>(args)...);
+		auto obj = New<TObj>(args...);
 		obj->m_Parent = this;
 		m_Children.push_back(obj);
 		return obj;
