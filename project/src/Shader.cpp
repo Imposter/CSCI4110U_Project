@@ -308,10 +308,10 @@ void Shader::Compile()
 	m_Compiled = true;
 }
 
-void Shader::Apply()
+void Shader::Use()
 {
 	if (!m_Compiled)
-		THROW_EXCEPTION(ShaderNotCompiledException, "Cannot apply uncompiled shader %s", m_Name.c_str());
+		THROW_EXCEPTION(ShaderNotCompiledException, "Cannot use uncompiled shader %s", m_Name.c_str());
 
 	glUseProgram(m_ID);
 }

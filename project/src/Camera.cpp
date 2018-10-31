@@ -3,7 +3,8 @@
 // TODO: Finish Camera, start on Texture and Light/DirectionalLight/SpotLight/PointLight classes
 
 Camera::Camera()
-	: m_FOV(CAMERA_DEFAULT_FOV), m_NearPlane(0.0f), m_FarPlane(1.0f), m_ClearColor(0.0f), m_ClearDepth(0.0f), m_ClearMode(kCameraClearMode_Both), m_PerspectiveMatrix(0.0f), m_ViewMatrix(0.0f)
+	: Object("Camera"), m_FOV(CAMERA_DEFAULT_FOV), m_NearPlane(0.0f), m_FarPlane(1.0f), m_ClearColor(0.0f), m_ClearDepth(0.0f), m_ClearMode(kCameraClearMode_Both), 
+	m_PerspectiveMatrix(0.0f), m_ViewMatrix(0.0f)
 {
 }
 

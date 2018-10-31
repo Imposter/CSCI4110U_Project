@@ -104,5 +104,5 @@ public:
 	ShaderVariable *GetVariable(const std::string &name) const;
 
 	void Compile();
-	void Apply();
+	void Use();
 };

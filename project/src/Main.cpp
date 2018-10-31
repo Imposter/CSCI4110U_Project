@@ -74,7 +74,7 @@ static void WindowRender(EventArgs &args)
 	g_Texture->Bind();
 
 	// Activate our shader program
-	g_Shader->Apply();
+	g_Shader->Use();
 
 	// Render
 	glBindVertexArray(g_SquareVAO);
@@ -141,9 +141,9 @@ int main(int argc, char **argv)
 
 	// Initialize OpenGL
 	glewInit();
-	if (!GLEW_VERSION_2_0)
+	if (!GLEW_VERSION_3_0)
 	{
-		LOG_ERROR("Main", "OpenGL 2.0 not available");
+		LOG_ERROR("Main", "OpenGL 3.0 not available");
 
 		// Delete window
 		Delete(g_Window);
