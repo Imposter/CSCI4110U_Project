@@ -92,6 +92,12 @@ public:
 	Shader(std::string name, std::vector<ShaderSource> sources);
 	~Shader();
 
+	Shader(const Shader &) = delete;
+	Shader &operator=(const Shader &) = delete;
+
+	Shader(const Shader &&) = delete;
+	Shader &operator=(const Shader &&) = delete;
+
 	const std::string &GetName() const;
 	const GLuint &GetID() const;
 

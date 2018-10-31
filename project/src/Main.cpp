@@ -195,7 +195,8 @@ int main(int argc, char **argv)
 		// Bind buffers
 		glBindBuffer(GL_ARRAY_BUFFER, g_SquareVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_SquareVertices), g_SquareVertices, GL_STATIC_DRAW);
-
+		
+		// TODO/NOTE: We will not need this for meshes/interleaved VBOs, we might be able to make a basic buffer class
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_SquareEBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_SquareIndices), g_SquareIndices, GL_STATIC_DRAW);
 
