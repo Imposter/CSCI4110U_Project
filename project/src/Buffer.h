@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <GL/glew.h>
 
-class Buffer
+class Buffer // TODO: Resizing
 {
 public:
 	enum Type
@@ -17,7 +17,8 @@ public:
 	enum Access
 	{
 		kAccess_Read = GL_MAP_READ_BIT,
-		kAccess_Write = GL_MAP_WRITE_BIT
+		kAccess_Write = GL_MAP_WRITE_BIT,
+		kAccess_ReadWrite = kAccess_Read | kAccess_Write
 	};
 
 private:
@@ -40,9 +41,22 @@ public:
 	const GLuint &GetID() const;
 	Type GetType() const;
 	size_t GetSize() const;
+	void SetSize(size_t size);
 
 	void Bind();
 
-	const void *Map(unsigned int offset, size_t size, int access = kAccess_Read);
+	const void *Map(unsigned int offset, size_t size, Access access = kAccess_ReadWrite);
 	void Unmap(unsigned int offset, size_t size);
+
+	template<typename TObject>
+	const TObject *Map(unsigned int index, unsigned int count, Access access = kAccess_ReadWrite)
+	{
+		return Map(index * sizeof(TObject), count * sizeof(TObject), access);
+	}
+
+	template<typename TObject>
+	void Unmap(unsigned int index, unsigned int count)
+	{
+		Unmap(index * sizeof(TObject), count * sizeof(TObject));
+	}
 };
