@@ -58,6 +58,9 @@ void Buffer::SetSize(size_t size)
 	glBindBuffer(GL_COPY_WRITE_BUFFER, m_ID);
 	glCopyBufferSubData(tempBuffer, m_ID, 0, 0, copySize);
 
+	// Destroy temporary buffer
+	glDeleteBuffers(1, &tempBuffer);
+
 	// Update new size
 	m_Size = size;
 
