@@ -183,10 +183,99 @@ void ShaderVariable::SetVecMatrixFloat4x3(unsigned int count, bool transpose, co
 	glUniformMatrix4x3fv(m_ID, count, transpose, val);
 }
 
-Shader::Shader(std::string name, GLuint id)
-	: m_Name(std::move(name)), m_ID(id)
+GLuint Shader::compileShader(GLenum type, const void *source)
 {
-	// Get max length of uniform name GL_ACTIVE_UNIFORM_MAX_LENGTH
+	// Create a shader with the specified source code
+	const auto shaderId = glCreateShader(type);
+	glShaderSource(shaderId, 1, reinterpret_cast<const GLchar **>(&source), nullptr);
+
+	// Compile the shader
+	glCompileShader(shaderId);
+
+	// Check if there were any compilation errors
+	int result;
+	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE)
+	{
+		int errorLength;
+		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &errorLength);
+
+		std::string errorMessage;
+		errorMessage.resize(errorLength);
+		glGetShaderInfoLog(shaderId, errorLength, &errorLength, const_cast<char *>(errorMessage.c_str()));
+
+		glDeleteShader(shaderId);
+
+		THROW_EXCEPTION(ShaderCompileException, "Shader compilation failed: %s", errorMessage.c_str());
+	}
+
+	return shaderId;
+}
+
+Shader::Shader(std::string name, std::vector<ShaderSource> sources)
+	: m_Name(std::move(name)), m_Sources(std::move(sources)), m_ID(0), m_Compiled(false)
+{
+}
+
+Shader::~Shader()
+{
+	for (auto &var : m_Variables)
+		Delete(var);
+
+	m_Variables.clear();
+
+	if (m_Compiled)
+	{
+		glDeleteProgram(m_ID);
+		m_Compiled = false;
+	}
+}
+
+const std::string &Shader::GetName() const
+{
+	return m_Name;
+}
+
+const GLuint &Shader::GetID() const
+{
+	return m_ID;
+}
+
+ShaderVariable *Shader::GetVariable(const std::string &name) const
+{
+	for (auto &var : m_Variables)
+	{
+		if (var->GetName() == name)
+			return var;
+	}
+
+	THROW_EXCEPTION(ShaderVariableNotFoundException, "Variable %s not found", name.c_str());
+}
+
+void Shader::Compile()
+{
+	// Compile shaders
+	std::vector<GLuint> shaderIds;
+
+	for (auto &source : m_Sources)
+	{
+		const auto code = String::Join(source.Code, "\n");
+		const auto shaderId = compileShader(source.Type, code.c_str());
+		shaderIds.push_back(shaderId);
+	}
+	
+	// Create and link the shaders into a program
+	m_ID = glCreateProgram();
+	for (auto &id : shaderIds)
+		glAttachShader(m_ID, id);
+	glLinkProgram(m_ID);
+	glValidateProgram(m_ID);
+
+	// Delete shaders
+	for (auto &id : shaderIds)
+		glDeleteShader(id);
+
+	// Get max length of uniform name
 	GLint maxNameLength;
 	glGetProgramiv(m_ID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
 
@@ -197,7 +286,7 @@ Shader::Shader(std::string name, GLuint id)
 	LOG_TRACE("Shader", "Shader %s has %d variable(s)", m_Name.c_str(), count);
 
 	for (auto i = 0; i < count; i++)
-	{ 
+	{
 		// Get uniform information
 		std::string varName;
 		varName.resize(maxNameLength);
@@ -214,38 +303,15 @@ Shader::Shader(std::string name, GLuint id)
 		// Store
 		m_Variables.push_back(New<ShaderVariable>(i, varName));
 	}
-}
 
-Shader::~Shader()
-{
-	for (auto &var : m_Variables)
-		Delete(var);
-
-	m_Variables.clear();
-}
-
-const std::string &Shader::GetName() const
-{
-	return m_Name;
-}
-
-const GLuint &Shader::GetID() const
-{
-	return m_ID;
-}
-
-ShaderVariable *Shader::GetVariable(std::string name) const
-{
-	for (auto &var : m_Variables)
-	{
-		if (var->GetName() == name)
-			return var;
-	}
-
-	THROW_EXCEPTION(ShaderVariableNotFoundException, "Variable %s not found", name.c_str());
+	// Set as compiled
+	m_Compiled = true;
 }
 
 void Shader::Apply()
 {
+	if (!m_Compiled)
+		THROW_EXCEPTION(ShaderNotCompiledException, "Cannot apply uncompiled shader %s", m_Name.c_str());
+
 	glUseProgram(m_ID);
 }

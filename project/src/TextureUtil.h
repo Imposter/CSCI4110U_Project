@@ -4,3 +4,4 @@
 #include <string>
 
 Texture *LoadTextureFromFile(const std::string &fileName, Texture::Format format = Texture::kFormat_RGB);
+void DestroyTexture(Texture *t);

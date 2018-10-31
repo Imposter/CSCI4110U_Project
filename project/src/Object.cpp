@@ -61,6 +61,9 @@ Transform *Object::GetTransform()
 
 Object::~Object()
 {
+	if (m_Parent)
+		m_Parent->RemoveChild(this);
+
 	for (auto &obj : m_Children)
 		Delete(obj);
 

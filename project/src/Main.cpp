@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 	g_Square->GetTransform()->SetRotation(glm::quat({ 0.0f, 0.0f, 0.0f }));
 
 	// Create texture
-	g_Texture = LoadTextureFromFile("data/textures/container.jpg");
+	g_Texture = LoadTextureFromFile("data/textures/joker.png", Texture::kFormat_RGBA);
 
 	// TODO/NOTE: For how Vertex classes (arrays/buffers should be done -- see: https://www.opengl.org/discussion_boards/showthread.php/198946-OpenGL-VAO-VBO-EBO-explained)
 	// TODO: Or we can do that in the mesh class like in Assignment 3 from last year...?
@@ -206,6 +206,10 @@ int main(int argc, char **argv)
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float))); // Texture coordinate
 		glEnableVertexAttribArray(2);
+
+		// TODO: We can store meta data with the meshes/models that we load and create vertex arrays with
+		// TODO: their attributes then -- https://stackoverflow.com/questions/28775659/c-interface-for-managing-opengl-vertex-attributes
+		// TODO: We should do that with Mesh formats -- with a meta data file like shaders
 	}
 
 	// Run main loop
@@ -214,7 +218,7 @@ int main(int argc, char **argv)
 	try
 	{
 		// Delete texture
-		Delete(g_Texture);
+		DestroyTexture(g_Texture);
 
 		// Shutdown
 		Delete(g_Root);

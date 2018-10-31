@@ -2,31 +2,16 @@
 
 #include "Texture.h"
 #include "Shader.h"
-#include "Utility/Exception.h"
-#include <glm/mat4x4.hpp>
 #include <map>
-
-// Exception definitions
-DEFINE_EXCEPTION(InvalidShaderException);
-DEFINE_EXCEPTION(ShaderCompileException);
 
 class GraphicsManager
 {
 	std::string m_ShaderPath;
-	std::map<std::string, Shader *> m_Shaders; // TODO/NOTE: Only shaders are managed by GraphicsManager?
-	glm::mat4x4 m_ViewMatrix; // NOTE: These are set by camera -- GameObject and Components are going to be different classes that do different things (Component for Logic, GameObject for game object like mesh, cam etc)
-	glm::mat4x4 m_ProjectionMatrix;
-	// TODO: Light sources ?? -- figure out from last year's code
-
-	// Shader compilation
-	static unsigned int compileShader(unsigned int type, const void *source);
-	static unsigned int compileShader(unsigned int type, const std::string &fileName);
+	std::map<std::string, Shader *> m_Shaders;
 
 public:
 	GraphicsManager(std::string shaderPath);
-	~GraphicsManager();
-
-	
+	~GraphicsManager();	
 
 	// NOTE: These return unsigned int addresses to GL pointers, RenderTexture, etc. access these?
 	// Or these return RenderTarget which takes unsigned int id as constructor param
@@ -42,8 +27,6 @@ public:
 	// TODO: Use camera func, or so?
 	void BeginScene(); // Should return RenderContext?
 	void EndScene();
-
-	// TODO: Set viewport, etc.? -- we need to merge last year code!
 
 	Shader *GetShader(const std::string &name);
 };

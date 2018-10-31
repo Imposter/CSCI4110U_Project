@@ -4,7 +4,10 @@
 #include <string>
 #include <vector>
 #include <GL/glew.h>
-#include <memory>
+
+// Exception definitions
+DEFINE_EXCEPTION(ShaderCompileException);
+DEFINE_EXCEPTION(ShaderNotCompiledException);
 
 class ShaderVariable
 {
@@ -60,20 +63,40 @@ public:
 
 DEFINE_EXCEPTION(ShaderVariableNotFoundException);
 
+enum ShaderType
+{
+	kShaderType_Fragment = GL_FRAGMENT_SHADER,
+	kShaderType_Vertex = GL_VERTEX_SHADER
+};
+
+struct ShaderSource
+{
+	std::string Name;
+	ShaderType Type;
+	std::vector<std::string> Code;
+};
+
 class Shader
 {
 	std::string m_Name;
+	std::vector<ShaderSource> m_Sources;
+
 	GLuint m_ID;
+	bool m_Compiled;
 	std::vector<ShaderVariable *> m_Variables;
 
+	// Shader compilation
+	static GLuint compileShader(GLenum type, const void *source);
+
 public:
-	Shader(std::string name, GLuint id);
+	Shader(std::string name, std::vector<ShaderSource> sources);
 	~Shader();
 
 	const std::string &GetName() const;
 	const GLuint &GetID() const;
 
-	ShaderVariable *GetVariable(std::string name) const;
+	ShaderVariable *GetVariable(const std::string &name) const;
 
+	void Compile();
 	void Apply();
 };
