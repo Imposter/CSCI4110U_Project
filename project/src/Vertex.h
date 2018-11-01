@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <GL/glew.h>
-#include <glm/vec3.hpp>
 
 enum VertexAttributeType
 {
@@ -103,12 +102,12 @@ class IndexBuffer : public Buffer
 
 public:
 	IndexBuffer(unsigned int count)
-		: Buffer(kType_ElementArrayBuffer, sizeof(glm::vec3) * count), m_Count(count)
+		: Buffer(kType_ElementArrayBuffer, sizeof(unsigned int) * count), m_Count(count)
 	{
 	}
 
 	IndexBuffer(const void *data, unsigned int count)
-		: Buffer(kType_ElementArrayBuffer, sizeof(glm::vec3) * count, data), m_Count(count)
+		: Buffer(kType_ElementArrayBuffer, sizeof(unsigned int) * count, data), m_Count(count)
 	{
 	}
 
@@ -120,14 +119,14 @@ public:
 	IndexBuffer(const IndexBuffer &&) = delete;
 	IndexBuffer &operator=(const IndexBuffer &&) = delete;
 
-	const glm::vec3 *Map(unsigned int index, unsigned int count, Access access = kAccess_ReadWrite)
+	const unsigned int *Map(unsigned int index, unsigned int count, Access access = kAccess_ReadWrite)
 	{
-		return Buffer::Map<glm::vec3>(index, count, access);
+		return Buffer::Map<unsigned int>(index, count, access);
 	}
 
 	void Unmap(unsigned int index, unsigned int count)
 	{
-		Buffer::Unmap<glm::vec3>(index, count);
+		Buffer::Unmap<unsigned int>(index, count);
 	}
 
 	unsigned int GetCount() const

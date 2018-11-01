@@ -1,17 +1,9 @@
 #pragma once
+#include "Texture.h"
 
-// TODO: RenderTexture : Texture?
-
-class RenderTexture
+class RenderTexture : public Texture
 {
-public:
-	enum Format
-	{
-		kFormat_
-	};
-
-private:
 	
 public:
-	//RenderTexture(unsigned int width, unsigned int height, unsigned int depth, );
+
 };

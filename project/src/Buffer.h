@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <GL/glew.h>
 
+// TODO/NOTE: We could also use this in textures, which would allow us to monitor video memory too since we'd be using it for everything
 class Buffer // TODO: Resizing
 {
 public:

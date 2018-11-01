@@ -20,6 +20,7 @@ public:
 	const GLuint &GetID() const;
 	const std::string &GetName() const;
 
+	// TODO: Make simpler/cleaner function names
 	void SetFloat1(float f1) const;
 	void SetFloat2(float f1, float f2) const;
 	void SetFloat3(float f1, float f2, float f3) const;

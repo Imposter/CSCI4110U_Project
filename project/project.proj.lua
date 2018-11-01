@@ -8,6 +8,7 @@ project "Project"
 		"../dependencies/include/GLEW",
 		"../dependencies/include/FreeGLUT",
 		"../dependencies/include/STB",
+		"../dependencies/include/TinyOBJLoader",
 		"src",
 	}
 	
@@ -31,7 +32,8 @@ project "Project"
 	dependson {
 		"GLM",
 		"rapidjson",
-		"STB"
+		"STB",
+		"TinyOBJLoader"
 	}
 	
 	filter "configurations:Debug"
