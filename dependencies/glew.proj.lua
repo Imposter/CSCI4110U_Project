@@ -24,13 +24,7 @@ project "GLEW"
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "On"
-		postbuildcommands { 
-			"{COPY} " .. _RA("GLEW/include") .. " " .. _RA("include/GLEW")
-		}
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
 		optimize "On"
-		postbuildcommands {
-			"{COPY} " .. _RA("GLEW/include") .. " " .. _RA("include/GLEW")
-		}

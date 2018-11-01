@@ -39,13 +39,7 @@ project "FreeGLUT"
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "On"
-		postbuildcommands { 
-			"{COPY} " .. _RA("FreeGLUT/include") .. " " .. _RA("include/FreeGLUT")
-		}
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
 		optimize "On"
-		postbuildcommands {
-			"{COPY} " .. _RA("FreeGLUT/include") .. " " .. _RA("include/FreeGLUT")
-		}

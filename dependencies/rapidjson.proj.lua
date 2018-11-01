@@ -13,12 +13,6 @@ project "RapidJSON"
 	
 	filter "configurations:Debug"
 		defines { "DEBUG" }
-		postbuildcommands { 
-			"{COPY} " .. _RA("RapidJSON/include/rapidjson") .. " " .. _RA("include/rapidjson")
-		}
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
-		postbuildcommands {
-			"{COPY} " .. _RA("RapidJSON/include/rapidjson") .. " " .. _RA("include/rapidjson")
-		}

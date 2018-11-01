@@ -4,11 +4,12 @@ project "Project"
 	characterset "MBCS"
 	
 	includedirs {
-		"../dependencies/include",
-		"../dependencies/include/GLEW",
-		"../dependencies/include/FreeGLUT",
-		"../dependencies/include/STB",
-		"../dependencies/include/TinyOBJLoader",
+		"../dependencies/FreeGLUT/include",
+		"../dependencies/GLEW/include",
+		"../dependencies/GLM",
+		"../dependencies/RapidJSON/include",
+		"../dependencies/STB",
+		"../dependencies/TinyOBJLoader",
 		"src",
 	}
 	

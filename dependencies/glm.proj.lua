@@ -14,12 +14,6 @@ project "GLM"
 	
 	filter "configurations:Debug"
 		defines { "DEBUG" }
-		postbuildcommands { 
-			"{COPY} " .. _RA("GLM/glm") .. " " .. _RA("include/glm")
-		}
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
-		postbuildcommands {
-			"{COPY} " .. _RA("GLM/glm") .. " " .. _RA("include/glm")
-		}

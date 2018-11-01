@@ -13,12 +13,6 @@ project "STB"
 	
 	filter "configurations:Debug"
 		defines { "DEBUG" }
-		postbuildcommands { 
-			"{COPY} " .. _RA("STB") .. " " .. _RA("include/STB")
-		}
 
 	filter "configurations:Release"
 		defines { "NDEBUG" }
-		postbuildcommands {
-			"{COPY} " .. _RA("STB") .. " " .. _RA("include/STB")
-		}
