@@ -14,11 +14,11 @@ struct EventArgs
 	}
 };
 
-template <typename TArg = EventArgs>
+template<typename... TArgs>
 class Event
 {
 	std::mutex m_Mutex;
-	std::vector<std::function<void(TArg &)>> m_Callbacks;
+	std::vector<std::function<void(TArgs...)>> m_Callbacks;
 
 public:
 	Event() = default;
@@ -64,20 +64,20 @@ public:
 		m_Mutex.unlock();
 	}
 
-	void Trigger(TArg arg)
+	void Trigger(TArgs... args)
 	{
-		std::vector<std::function<void(TArg &)>> callbacks(m_Callbacks.size());
+		std::vector<std::function<void(TArgs...)>> callbacks(m_Callbacks.size());
 
 		m_Mutex.lock();
 		std::copy(m_Callbacks.begin(), m_Callbacks.end(), callbacks.begin());
 		m_Mutex.unlock();
 
 		for (auto iterator = callbacks.begin(); iterator != callbacks.end(); ++iterator)
-			(*iterator)(arg);
+			(*iterator)(args...);
 	}
 
-	void operator()(TArg arg)
+	void operator()(TArgs... args)
 	{
-		Trigger(arg);
+		Trigger(args...);
 	}
 };

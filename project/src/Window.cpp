@@ -19,12 +19,12 @@ std::map<int, Key> Window::m_SpecialKeys =
 	{ GLUT_KEY_F10, kKey_F10 },
 	{ GLUT_KEY_F11, kKey_F11 },
 	{ GLUT_KEY_F12, kKey_F12 },
-	
+
 	{ GLUT_KEY_LEFT, kKey_Left },
 	{ GLUT_KEY_UP, kKey_Up },
 	{ GLUT_KEY_RIGHT, kKey_Right },
 	{ GLUT_KEY_DOWN, kKey_Down },
-	
+
 	{ GLUT_KEY_PAGE_UP, kKey_PageUp },
 	{ GLUT_KEY_PAGE_DOWN, kKey_PageDown },
 	{ GLUT_KEY_HOME, kKey_Home },
@@ -101,12 +101,12 @@ KeyEventArgs::KeyEventArgs(Key special)
 void Window::onClose()
 {
 	const auto window = static_cast<Window *>(glutGetWindowData());
-	
+
 	window->m_Open = false;
 	window->m_Visible = false;
 
 	// Trigger event
-	window->OnClose({});
+	window->OnClose();
 }
 
 void Window::onRender()
@@ -114,7 +114,7 @@ void Window::onRender()
 	const auto window = static_cast<Window *>(glutGetWindowData());
 
 	// Trigger event
-	window->OnRender({});
+	window->OnRender();
 }
 
 void Window::onPosition(int x, int y)
@@ -126,7 +126,8 @@ void Window::onPosition(int x, int y)
 	window->m_Y = y;
 
 	// Trigger event
-	window->OnMove({ x, y });
+	MoveEventArgs args(x, y);
+	window->OnMove(args);
 }
 
 void Window::onResize(int width, int height)
@@ -138,13 +139,16 @@ void Window::onResize(int width, int height)
 	window->m_Height = height;
 
 	// Trigger event
-	window->OnResize({ width, height });
+	ResizeEventArgs args(width, height);
+	window->OnResize(args);
 }
 
 void Window::onMouseMove(int x, int y)
 {
 	const auto window = static_cast<Window *>(glutGetWindowData());
-	window->OnMouseMove({ x, y });
+	
+	MouseEventArgs args(x, y);
+	window->OnMouseMove(args);
 }
 
 void Window::onMouseButton(int button, int state, int x, int y)
@@ -159,23 +163,25 @@ void Window::onMouseButton(int button, int state, int x, int y)
 	else if (button == GLUT_MIDDLE_BUTTON)
 		mouseButton = kMouseButton_Middle;
 
+	MouseEventArgs args(x, y, mouseButton);
 	if (state == GLUT_DOWN)
-		window->OnMouseDown({ x, y, mouseButton });
+		window->OnMouseDown(args);
 	else if (state == GLUT_UP)
-		window->OnMouseUp({ x, y, mouseButton });
+		window->OnMouseUp(args);
 }
 
 void Window::onMouseWheel(int mouse, int direction, int x, int y)
 {
 	const auto window = static_cast<Window *>(glutGetWindowData());
 
-	window->OnMouseWheel({ x, y, direction });
+	MouseEventArgs args(x, y, direction);
+	window->OnMouseWheel(args);
 }
 
 void Window::onKeyDown(unsigned char key, int x, int y)
 {
 	const auto window = static_cast<Window *>(glutGetWindowData());
-	
+
 	// Get modifiers
 	unsigned int modifiers = 0;
 	const auto mods = glutGetModifiers();
@@ -195,11 +201,14 @@ void Window::onKeyDown(unsigned char key, int x, int y)
 		if (it->second == kKeyState_Up)
 		{
 			it->second = kKeyState_Down;
-			window->OnKeyDown({ key, modifiers });
+
+			KeyEventArgs args(key, modifiers);
+			window->OnKeyDown(args);
 		}
 	}
 
-	window->OnKeyPress({ key });
+	KeyPressEventArgs args(key);
+	window->OnKeyPress(args);
 }
 
 void Window::onKeyUp(unsigned char key, int x, int y)
@@ -225,7 +234,9 @@ void Window::onKeyUp(unsigned char key, int x, int y)
 		if (it->second == kKeyState_Down)
 		{
 			it->second = kKeyState_Up;
-			window->OnKeyDown({ key, modifiers });
+
+			KeyEventArgs args(key, modifiers);
+			window->OnKeyDown(args);
 		}
 	}
 }
@@ -240,7 +251,8 @@ void Window::onKeySpecialDown(int key, int x, int y)
 		k = kKey_None;
 	else k = it->second;
 
-	window->OnKeyDown({ k });
+	KeyEventArgs args(k);
+	window->OnKeyDown(args);
 }
 
 void Window::onKeySpecialUp(int key, int x, int y)
@@ -253,7 +265,8 @@ void Window::onKeySpecialUp(int key, int x, int y)
 		k = kKey_None;
 	else k = it->second;
 
-	window->OnKeyUp({ k });
+	KeyEventArgs args(k);
+	window->OnKeyUp(args);
 }
 
 void Window::initWindow()
@@ -323,6 +336,12 @@ Window::Window(std::string title, unsigned width, unsigned height, unsigned flag
 
 Window::~Window()
 {
+	shutdownWindow();
+}
+
+void Window::Close()
+{
+	// Close window
 	shutdownWindow();
 }
 

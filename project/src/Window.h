@@ -156,6 +156,8 @@ public:
 	Window(std::string title, unsigned int width, unsigned int height, unsigned int flags = kFlag_DoubleBuffered);
 	~Window();
 
+	void Close();
+
 	const std::string &GetTitle() const;
 	void SetTitle(const std::string &title);
 
@@ -182,13 +184,13 @@ public:
 	// Public events
 	Event<> OnClose;
 	Event<> OnRender;
-	Event<ResizeEventArgs> OnResize;
-	Event<MoveEventArgs> OnMove;
-	Event<MouseEventArgs> OnMouseDown;
-	Event<MouseEventArgs> OnMouseUp;
-	Event<MouseEventArgs> OnMouseMove;
-	Event<MouseEventArgs> OnMouseWheel;
-	Event<KeyEventArgs> OnKeyDown;
-	Event<KeyEventArgs> OnKeyUp;
-	Event<KeyPressEventArgs> OnKeyPress;
+	Event<ResizeEventArgs &> OnResize;
+	Event<MoveEventArgs &> OnMove;
+	Event<MouseEventArgs &> OnMouseDown;
+	Event<MouseEventArgs &> OnMouseUp;
+	Event<MouseEventArgs &> OnMouseMove;
+	Event<MouseEventArgs &> OnMouseWheel;
+	Event<KeyEventArgs &> OnKeyDown;
+	Event<KeyEventArgs &> OnKeyUp;
+	Event<KeyPressEventArgs &> OnKeyPress;
 };

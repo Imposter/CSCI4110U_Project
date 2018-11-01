@@ -62,7 +62,13 @@ static void Update()
 	glutPostRedisplay();
 }
 
-static void WindowRender(EventArgs &args)
+static void WindowClose()
+{
+	// Exit loop and proceed with shutdown
+	glutLeaveMainLoop();
+}
+
+static void WindowRender()
 {
 	// Clear buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -101,7 +107,8 @@ static void WindowKeyDown(KeyEventArgs &args)
 {
 	if (args.Value == kKey_Escape)
 	{
-		glutLeaveMainLoop();
+		// Close window and proceed with shutdown
+		g_Window->Close();
 	}
 }
 
@@ -125,6 +132,9 @@ int main(int argc, char **argv)
 	// Set update function
 	glutIdleFunc(&Update);
 
+	// Set glut window shutdown behaviour
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+
 	// Window config
 	const auto width = FULLSCREEN ? glutGet(GLUT_SCREEN_WIDTH) : WIDTH;
 	const auto height = FULLSCREEN ? glutGet(GLUT_SCREEN_HEIGHT) : HEIGHT;
@@ -134,7 +144,7 @@ int main(int argc, char **argv)
 
 	// Create window
 	g_Window = New<Window>("CSCI4110U Final Project", width, height, flags);
-
+	g_Window->OnClose.Add(WindowClose);
 	g_Window->OnRender.Add(WindowRender);
 	g_Window->OnResize.Add(WindowResize);
 	g_Window->OnKeyDown.Add(WindowKeyDown);
@@ -222,8 +232,8 @@ int main(int argc, char **argv)
 		DestroyTexture(g_Texture);
 
 		// Shutdown
-		Delete(g_Root);
-		Delete(g_GraphicsManager);
+		//Delete(g_Root);
+		//Delete(g_GraphicsManager);
 
 		// Close window
 		Delete(g_Window);

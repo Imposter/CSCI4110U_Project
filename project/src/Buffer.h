@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 
 // TODO/NOTE: We could also use this in textures, which would allow us to monitor video memory too since we'd be using it for everything
-class Buffer // TODO: Resizing
+class Buffer
 {
 public:
 	enum Type
@@ -52,7 +52,7 @@ public:
 	template<typename TObject>
 	const TObject *Map(unsigned int index, unsigned int count, Access access = kAccess_ReadWrite)
 	{
-		return Map(index * sizeof(TObject), count * sizeof(TObject), access);
+		return (TObject *)Map(index * sizeof(TObject), count * sizeof(TObject), access);
 	}
 
 	template<typename TObject>
