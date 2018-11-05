@@ -273,7 +273,10 @@ void Shader::Compile()
 
 	// Delete shaders
 	for (auto &id : shaderIds)
+	{
+		glDetachShader(m_ID, id);
 		glDeleteShader(id);
+	}
 
 	// Get max length of uniform name
 	GLint maxNameLength;
