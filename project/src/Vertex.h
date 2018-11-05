@@ -41,16 +41,26 @@ class VertexArray
 	bool m_Enabled;
 	unsigned int m_Stride;
 
+	void init();
+	void shutdown();
+
 public:
 	VertexArray(std::vector<VertexAttribute> attributes = {});
 	~VertexArray();
+
+	VertexArray(const VertexArray &copy);
+	VertexArray &operator=(const VertexArray &copy);
+
+	// No moving
+	VertexArray(const VertexArray &&) = delete;
+	VertexArray &operator=(const VertexArray &&) = delete;
 
 	std::vector<VertexAttribute> GetAttributes() const;
 	void AddAttribute(const VertexAttribute &attribute);
 
 	void Bind();
 
-	// NOTE: An array buffer (VBO) for this array should already be bound before calling this function, as well as this array being binded
+	// NOTE: An array buffer (VBO) for this array should already be bound before calling this function
 	void Apply();
 };
 
@@ -63,20 +73,34 @@ class VertexBuffer : public Buffer
 
 public:
 	VertexBuffer(std::vector<VertexAttribute> attributes, unsigned int count)
-		: Buffer(kType_ArrayBuffer, sizeof(TVertex) * count), m_Array(attributes), m_Count(count)
+		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count), m_Array(attributes), m_Count(count)
 	{
 	}
 
 	VertexBuffer(std::vector<VertexAttribute> attributes, const void *data, unsigned int count)
-		: Buffer(kType_ArrayBuffer, sizeof(TVertex) * count, data), m_Array(attributes), m_Count(count)
+		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count, data), m_Array(attributes), m_Count(count)
 	{
 	}
 
 	~VertexBuffer() = default;
 
-	VertexBuffer(const VertexBuffer &) = delete;
-	VertexBuffer &operator=(const VertexBuffer &) = delete;
+	VertexBuffer(const VertexBuffer &copy)
+		: Buffer(copy.m_Target, copy.m_Size, nullptr, copy.m_Dynamic), m_Array(copy.m_Array), m_Count(copy.m_Count)
+	{
+		Copy(copy);
+	}
 
+	VertexBuffer &operator=(const VertexBuffer &copy)
+	{
+		Buffer::operator=(copy);
+
+		m_Array = copy.m_Array;
+		m_Count = copy.m_Count;
+
+		return *this;
+	}
+
+	// No moving
 	VertexBuffer(const VertexBuffer &&) = delete;
 	VertexBuffer &operator=(const VertexBuffer &&) = delete;
 
@@ -102,20 +126,33 @@ class IndexBuffer : public Buffer
 
 public:
 	IndexBuffer(unsigned int count)
-		: Buffer(kType_ElementArrayBuffer, sizeof(unsigned int) * count), m_Count(count)
+		: Buffer(kTarget_ElementArrayBuffer, sizeof(unsigned int) * count), m_Count(count)
 	{
 	}
 
 	IndexBuffer(const void *data, unsigned int count)
-		: Buffer(kType_ElementArrayBuffer, sizeof(unsigned int) * count, data), m_Count(count)
+		: Buffer(kTarget_ElementArrayBuffer, sizeof(unsigned int) * count, data), m_Count(count)
 	{
 	}
 
 	~IndexBuffer() = default;
 
-	IndexBuffer(const IndexBuffer &) = delete;
-	IndexBuffer &operator=(const IndexBuffer &) = delete;
+	IndexBuffer(const IndexBuffer &copy)
+		: Buffer(copy.m_Target, copy.m_Size, nullptr, copy.m_Dynamic), m_Count(copy.m_Count)
+	{
+		Copy(copy);
+	}
 
+	IndexBuffer &operator=(const IndexBuffer &copy)
+	{
+		Buffer::operator=(copy);
+
+		m_Count = copy.m_Count;
+
+		return *this;
+	}
+
+	// No moving
 	IndexBuffer(const IndexBuffer &&) = delete;
 	IndexBuffer &operator=(const IndexBuffer &&) = delete;
 

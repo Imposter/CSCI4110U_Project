@@ -30,8 +30,7 @@ size_t VertexAttribute::GetSize() const
 	return m_Size;
 }
 
-VertexArray::VertexArray(std::vector<VertexAttribute> attributes)
-	: m_ID(0), m_Attributes(std::move(attributes)), m_Enabled(false), m_Stride(0)
+void VertexArray::init()
 {
 	// Generate vertex array
 	glGenVertexArrays(1, &m_ID);
@@ -40,19 +39,56 @@ VertexArray::VertexArray(std::vector<VertexAttribute> attributes)
 	glBindVertexArray(m_ID);
 }
 
-VertexArray::~VertexArray()
+void VertexArray::shutdown()
 {
 	// Disable attribute pointers
 	if (m_Enabled)
 	{
 		for (size_t i = 0; i < m_Attributes.size(); i++)
 			glDisableVertexAttribArray(i);
+
+		m_Enabled = false;
 	}
 
 	// Unbind
 	glDeleteVertexArrays(1, &m_ID);
+}
+
+VertexArray::VertexArray(std::vector<VertexAttribute> attributes)
+	: m_ID(0), m_Attributes(std::move(attributes)), m_Enabled(false), m_Stride(0)
+{
+	init();
+}
+
+VertexArray::~VertexArray()
+{
+	shutdown();
 
 	m_Attributes.clear();
+}
+
+VertexArray::VertexArray(const VertexArray &copy)
+	: m_ID(0), m_Attributes(copy.m_Attributes), m_Enabled(copy.m_Enabled), m_Stride(copy.m_Stride)
+{
+	init();
+
+	if (m_Enabled) Apply();
+}
+
+VertexArray &VertexArray::operator=(const VertexArray &copy)
+{
+	shutdown();
+
+	m_Attributes.clear();
+
+	m_Attributes = copy.m_Attributes;
+	m_Stride = copy.m_Stride;
+
+	init();
+
+	if (m_Enabled) Apply();
+
+	return *this;
 }
 
 std::vector<VertexAttribute> VertexArray::GetAttributes() const
@@ -76,6 +112,9 @@ void VertexArray::Bind()
 
 void VertexArray::Apply()
 {
+	// Set active
+	glBindVertexArray(m_ID);
+
 	unsigned int position = 0;
 	for (size_t i = 0; i < m_Attributes.size(); i++)
 	{
