@@ -2,6 +2,7 @@ project "TinyOBJLoader"
 	kind "StaticLib"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"TinyOBJLoader/"

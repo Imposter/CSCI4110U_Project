@@ -2,6 +2,7 @@ project "FreeGLUT"
 	kind "SharedLib"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"FreeGLUT/include",

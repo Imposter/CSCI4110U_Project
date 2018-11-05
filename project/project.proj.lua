@@ -2,6 +2,7 @@ project "Project"
 	kind "ConsoleApp"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"../dependencies/FreeGLUT/include",

@@ -2,6 +2,7 @@ project "STB"
 	kind "StaticLib"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"STB/"

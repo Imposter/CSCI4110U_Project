@@ -2,6 +2,7 @@ project "GLEW"
 	kind "SharedLib"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"GLEW/include",

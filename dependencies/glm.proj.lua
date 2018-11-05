@@ -2,6 +2,7 @@ project "GLM"
 	kind "StaticLib"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"GLM/glm"

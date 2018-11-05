@@ -2,6 +2,7 @@ project "RapidJSON"
 	kind "StaticLib"
 	language "C++"
 	characterset "MBCS"
+	systemversion "latest"
 	
 	includedirs {
 		"RapidJSON/include/rapidjson"
