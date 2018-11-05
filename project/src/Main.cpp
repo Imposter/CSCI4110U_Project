@@ -232,8 +232,8 @@ int main(int argc, char **argv)
 		DestroyTexture(g_Texture);
 
 		// Shutdown
-		//Delete(g_Root);
-		//Delete(g_GraphicsManager);
+		Delete(g_Root);
+		Delete(g_GraphicsManager);
 
 		// Close window
 		Delete(g_Window);
