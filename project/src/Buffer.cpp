@@ -1,16 +1,21 @@
 #include "Buffer.h"
 
-Buffer::Buffer(Type type, size_t size, const void *data, bool dynamic)
-	: m_ID(0), m_Type(type), m_Size(size), m_Dynamic(dynamic)
+void Buffer::init(const void *data)
 {
 	// Generate buffer
 	glGenBuffers(1, &m_ID);
 
 	// Bind buffer
-	glBindBuffer(m_Type, m_ID);
+	glBindBuffer(m_Target, m_ID);
 
 	// Create buffer with no data
-	glBufferData(m_Type, m_Size, data, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	glBufferData(m_Target, m_Size, data, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+}
+
+Buffer::Buffer(Target target, size_t size, const void *data, bool dynamic)
+	: m_ID(0), m_Target(target), m_Size(size), m_Dynamic(dynamic), m_Bound(false), m_BoundAccess(kAccess_None)
+{
+	init(data);
 }
 
 Buffer::~Buffer()
@@ -18,14 +23,35 @@ Buffer::~Buffer()
 	glDeleteBuffers(1, &m_ID);
 }
 
+Buffer::Buffer(const Buffer &copy)
+	: m_ID(0), m_Target(copy.m_Target), m_Size(copy.m_Size), m_Dynamic(copy.m_Dynamic), m_Bound(false), m_BoundAccess(kAccess_None)
+{
+	// Init
+	init();
+
+	// Copy
+	Copy(copy);
+}
+
+Buffer &Buffer::operator=(const Buffer &copy)
+{
+	if (m_Bound)
+		THROW_EXCEPTION(BufferBoundException, "Cannot set buffer that is currently bound");
+
+	// Copy other buffer
+	Copy(copy);
+
+	return *this;
+}
+
 const GLuint &Buffer::GetID() const
 {
 	return m_ID;
 }
 
-Buffer::Type Buffer::GetType() const
+Buffer::Target Buffer::GetTarget() const
 {
-	return m_Type;
+	return m_Target;
 }
 
 size_t Buffer::GetSize() const
@@ -35,50 +61,74 @@ size_t Buffer::GetSize() const
 
 void Buffer::SetSize(size_t size)
 {
-	// Allocate a new temporary buffer
-	GLuint tempBuffer;
-	glGenBuffers(1, &tempBuffer);
-	glBindBuffer(m_Type, tempBuffer);
+	// Create a new buffer
+	Buffer tempBuffer(m_Target, size, nullptr, m_Dynamic);
 
-	// Create it to preferred size
-	glBufferData(m_Type, m_Size, nullptr, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	// Copy current buffer
+	tempBuffer.Copy(*this);
 
-	// Copy data to it
-	glBindBuffer(GL_COPY_READ_BUFFER, m_ID);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, tempBuffer);
-	glCopyBufferSubData(m_ID, tempBuffer, 0, 0, m_Size);
-
-	// Create our new buffer with no data
-	glBindBuffer(m_Type, m_ID);
-	glBufferData(m_Type, size, nullptr, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-
-	// Copy data to it
-	const auto copySize = size < m_Size ? size : m_Size;
-	glBindBuffer(GL_COPY_READ_BUFFER, tempBuffer);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, m_ID);
-	glCopyBufferSubData(tempBuffer, m_ID, 0, 0, copySize);
-
-	// Destroy temporary buffer
-	glDeleteBuffers(1, &tempBuffer);
-
-	// Update new size
-	m_Size = size;
-
+	// Copy back to this buffer
+	Copy(tempBuffer);
 }
 
-void Buffer::Bind()
+void Buffer::Bind(Target target)
 {
-	glBindBuffer(m_Type, m_ID);
+	if (target == kTarget_None)
+		target = m_Target;
+
+	glBindBuffer(target, m_ID);
+}
+
+void Buffer::Copy(const Buffer &buffer)
+{
+	// Bind other buffer as source
+	glBindBuffer(GL_COPY_READ_BUFFER, buffer.m_ID);
+
+	// Bind this buffer as write target
+	glBindBuffer(GL_COPY_WRITE_BUFFER, m_ID);
+	
+	// Resize this buffer (if needed)
+	if (m_Size != buffer.m_Size)
+		glBufferData(GL_COPY_WRITE_BUFFER, buffer.m_Size, nullptr, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+
+	// Copy to this buffer
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, buffer.m_Size);
+
+	// Update size
+	m_Size = buffer.m_Size;
 }
 
 const void *Buffer::Map(unsigned int offset, size_t size, Access access)
 {
+	if (m_Bound)
+		THROW_EXCEPTION(BufferBoundException, "Buffer already bound");
+
 	auto flags = static_cast<int>(access);
-	if (flags & kAccess_Write) flags |= GL_MAP_INVALIDATE_RANGE_BIT;
-	return glMapBufferRange(m_ID, offset, size, flags);
+	if (access & kAccess_Write && !(access & kAccess_Read))
+	{
+		flags |= GL_MAP_INVALIDATE_RANGE_BIT; // Invalidate the range we are mapping
+		flags |= GL_MAP_FLUSH_EXPLICIT_BIT; // Flush on unmap
+	}
+
+	glBindBuffer(m_Target, m_ID);
+	const auto ptr = glMapBufferRange(m_Target, offset, size, flags);
+
+	m_Bound = true;
+	m_BoundAccess = access;
+
+	return ptr;
 }
 
 void Buffer::Unmap(unsigned int offset, size_t size)
 {
-	glFlushMappedBufferRange(m_ID, offset, size);
+	if (!m_Bound)
+		THROW_EXCEPTION(BufferNotBoundException, "Buffer not bound");
+
+	glBindBuffer(m_Target, m_ID);
+	if (m_BoundAccess & kAccess_Write && !(m_BoundAccess & kAccess_Read)) 
+		glFlushMappedBufferRange(m_Target, offset, size);
+	glUnmapBuffer(m_Target);
+
+	m_Bound = false;
+	m_BoundAccess = kAccess_None;
 }

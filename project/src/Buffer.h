@@ -1,50 +1,68 @@
 #pragma once
 
+#include "Utility/Exception.h"
 #include <cstdint>
 #include <GL/glew.h>
+
+DEFINE_EXCEPTION(BufferBoundException);
+DEFINE_EXCEPTION(BufferNotBoundException);
 
 // TODO/NOTE: We could also use this in textures, which would allow us to monitor video memory too since we'd be using it for everything
 class Buffer
 {
 public:
-	enum Type
+	enum Target
 	{
-		kType_ArrayBuffer = GL_ARRAY_BUFFER,
-		kType_ElementArrayBuffer = GL_ELEMENT_ARRAY_BUFFER,
-		kType_QueryBuffer = GL_QUERY_BUFFER,
-		kType_TextureBuffer = GL_TEXTURE_BUFFER,
+		kTarget_None = 0,
+
+		kTarget_ArrayBuffer = GL_ARRAY_BUFFER,
+		kTarget_ElementArrayBuffer = GL_ELEMENT_ARRAY_BUFFER,
+		kTarget_QueryBuffer = GL_QUERY_BUFFER,
+		kTarget_TextureBuffer = GL_TEXTURE_BUFFER,
+
+		kTarget_CopyReadBuffer = GL_COPY_READ_BUFFER,
+		kTarget_CopyWriteBuffer = GL_COPY_WRITE_BUFFER,
 	};
 
 	enum Access
 	{
+		kAccess_None = 0,
+
 		kAccess_Read = GL_MAP_READ_BIT,
 		kAccess_Write = GL_MAP_WRITE_BIT,
 		kAccess_ReadWrite = kAccess_Read | kAccess_Write
 	};
 
-private:
+protected:
 	GLuint m_ID;
-	Type m_Type;
+	Target m_Target;
 	size_t m_Size;
 	bool m_Dynamic;
 
+	bool m_Bound;
+	Access m_BoundAccess;
+
+private:
+	void init(const void *data = nullptr);
+
 public:
-	Buffer(Type type, size_t size, const void *data = nullptr, bool dynamic = false);
+	Buffer(Target target, size_t size, const void *data = nullptr, bool dynamic = false);
 	~Buffer();
 
-	// No copying/moving -- for now
-	Buffer(const Buffer &) = delete;
-	Buffer &operator=(const Buffer &) = delete;
+	Buffer(const Buffer &copy);
+	Buffer &operator=(const Buffer &copy);
 
+	// No moving
 	Buffer(const Buffer &&) = delete;
 	Buffer &operator=(const Buffer &&) = delete;
 
 	const GLuint &GetID() const;
-	Type GetType() const;
+	Target GetTarget() const;
 	size_t GetSize() const;
 	void SetSize(size_t size);
 
-	void Bind();
+	void Bind(Target target = kTarget_None);
+	void Copy(const Buffer &buffer);
 
 	const void *Map(unsigned int offset, size_t size, Access access = kAccess_ReadWrite);
 	void Unmap(unsigned int offset, size_t size);
