@@ -5,6 +5,7 @@
 #include "Object.h"
 #include "TextureUtil.h"
 #include "Texture.h"
+#include "Mesh.h"
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -35,6 +36,9 @@ Object *g_Square;
 
 Texture *g_Texture;
 
+// Test
+//Mesh *g_Mesh;
+
 // Square
 float g_SquareVertices[] = {
 	// Positions          // Colors           // Texture coords
@@ -49,9 +53,9 @@ unsigned int g_SquareIndices[] = {
 	1, 2, 3  // Second triangle
 };
 
-GLuint g_SquareVAO; // Vertex array -- stores vertex format (position, color, tex coord)
-GLuint g_SquareVBO; // Vertex buffer
-GLuint g_SquareEBO; // Index buffer
+VertexArray *g_SquareVAO;
+Buffer *g_SquareVBO;
+Buffer *g_SquareEBO;
 
 static void Update()
 {
@@ -83,8 +87,10 @@ static void WindowRender()
 	g_Shader->Use();
 
 	// Render
-	glBindVertexArray(g_SquareVAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	//g_Mesh->Render(nullptr); // TODO/NOTE: Partly works
+
+	g_SquareVAO->Bind();
+	glDrawElements(GL_TRIANGLES, sizeof(g_SquareIndices) / sizeof(float), GL_UNSIGNED_INT, 0);
 
 	// Make the draw buffer to display buffer
 	g_Window->SwapBuffers();
@@ -273,38 +279,40 @@ int main(int argc, char **argv)
 	// Create texture
 	g_Texture = LoadTextureFromFile("data/textures/joker.png", Texture::kFormat_RGBA);
 
-	// TODO/NOTE: For how Vertex classes (arrays/buffers should be done -- see: https://www.opengl.org/discussion_boards/showthread.php/198946-OpenGL-VAO-VBO-EBO-explained)
-	// TODO: Or we can do that in the mesh class like in Assignment 3 from last year...?
+	// Generate mesh
 	{
-		// Generate vertex array
-		glGenVertexArrays(1, &g_SquareVAO);
+		std::vector<MeshVertex> vertices;
+		for (size_t i = 0; i < sizeof(g_SquareVertices) / sizeof(MeshVertex); i++)
+		{
+			MeshVertex v;
+			v.Position = glm::vec3(g_SquareVertices[i + 0], g_SquareVertices[i + 1], g_SquareVertices[i + 2]);
+			v.Normal = glm::vec3(g_SquareVertices[i + 3], g_SquareVertices[i + 4], g_SquareVertices[i + 5]); // Color
+			v.TexCoords = glm::vec2(g_SquareVertices[i + 6], g_SquareVertices[i + 7]);
 
-		// Generate buffers
-		glGenBuffers(1, &g_SquareVBO);
-		glGenBuffers(1, &g_SquareEBO);
+			vertices.push_back(v);
+		}
 
-		// Bind vertex array
-		glBindVertexArray(g_SquareVAO);
+		LOG_TRACE("Main", "sizeof(MeshVertex)=%d", sizeof(MeshVertex));
 
-		// Bind buffers
-		glBindBuffer(GL_ARRAY_BUFFER, g_SquareVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_SquareVertices), g_SquareVertices, GL_STATIC_DRAW);
+		std::vector<unsigned int> indices;
+		for (size_t i = 0; i < sizeof(g_SquareIndices) / sizeof(float); i++)
+		{
+			indices.push_back(g_SquareIndices[i]);
+		}
 
-		// TODO/NOTE: We will not need this for meshes/interleaved VBOs, we might be able to make a basic buffer class
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_SquareEBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_SquareIndices), g_SquareIndices, GL_STATIC_DRAW);
+		//g_Mesh = New<Mesh>("SquareMesh", vertices, indices, std::vector<Texture *>());// TODO/NOTE: Partly works...
+		//g_Mesh->Compile();
+	}
 
-		// Set vertex attributes
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(0)); // Position
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float))); // Color
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float))); // Texture coordinate
-		glEnableVertexAttribArray(2);
+	{
+		g_SquareVAO = New<VertexArray>(MeshVertex::GetAttributes());
 
-		// TODO: We can store meta data with the meshes/models that we load and create vertex arrays with
-		// TODO: their attributes then -- https://stackoverflow.com/questions/28775659/c-interface-for-managing-opengl-vertex-attributes
-		// TODO: We should do that with Mesh formats -- with a meta data file like shaders
+		g_SquareVAO->Bind();
+
+		g_SquareVBO = New<Buffer>(Buffer::kTarget_ArrayBuffer, sizeof(g_SquareVertices), g_SquareVertices);
+		g_SquareEBO = New<Buffer>(Buffer::kTarget_ElementArrayBuffer, sizeof(g_SquareIndices), g_SquareIndices);
+
+		g_SquareVAO->Apply();
 	}
 
 	// Run main loop
@@ -312,6 +320,14 @@ int main(int argc, char **argv)
 
 	try
 	{
+		// Delete buffers
+		Delete(g_SquareVAO);
+		Delete(g_SquareEBO);
+		Delete(g_SquareVBO);
+
+		// Delete mesh
+		//Delete(g_Mesh);
+
 		// Delete texture
 		DestroyTexture(g_Texture);
 
