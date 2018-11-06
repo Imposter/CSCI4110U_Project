@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Texture.h"
+#include "Utility/Exception.h"
 #include <string>
 
-Texture *LoadTextureFromFile(const std::string &fileName, Texture::Format format = Texture::kFormat_RGB);
+DEFINE_EXCEPTION(InvalidTextureException);
+
+Texture *LoadTextureFromFile(const std::string &path, const std::string &name);
 void DestroyTexture(Texture *t);

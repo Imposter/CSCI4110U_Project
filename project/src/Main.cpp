@@ -3,8 +3,6 @@
 #include "Window.h"
 #include "GraphicsManager.h"
 #include "Object.h"
-#include "TextureUtil.h"
-#include "Texture.h"
 #include "Mesh.h"
 
 #include <GL/glew.h>
@@ -189,26 +187,6 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 #endif
 
-// TEST
-void hexdump(void *ptr, int buflen) {
-	unsigned char *buf = (unsigned char*)ptr;
-	int i, j;
-	for (i = 0; i < buflen; i += 16) {
-		printf("%06x: ", i);
-		for (j = 0; j < 16; j++)
-			if (i + j < buflen)
-				printf("%02x ", buf[i + j]);
-			else
-				printf("   ");
-		printf(" ");
-		for (j = 0; j < 16; j++)
-			if (i + j < buflen)
-				printf("%c", isprint(buf[i + j]) ? buf[i + j] : '.');
-		printf("\n");
-	}
-}
-
-
 int main(int argc, char **argv)
 {
 	// Initialize logging
@@ -279,7 +257,7 @@ int main(int argc, char **argv)
 	g_Root = New<Object>("Root");
 
 	// Create graphics manager
-	g_GraphicsManager = New<GraphicsManager>("data/shaders");
+	g_GraphicsManager = New<GraphicsManager>("data");
 	g_Shader = g_GraphicsManager->GetShader("main");
 
 	// Create objects
@@ -289,7 +267,7 @@ int main(int argc, char **argv)
 	g_Square->GetTransform()->SetRotation(glm::quat({ 0.0f, 0.0f, 0.0f }));
 
 	// Create texture
-	g_Texture = LoadTextureFromFile("data/textures/joker.png", Texture::kFormat_RGBA);
+	g_Texture = g_GraphicsManager->GetTexture("container");
 
 	// Generate mesh
 	{
@@ -312,9 +290,6 @@ int main(int argc, char **argv)
 	{
 		// Delete mesh
 		Delete(g_Mesh);
-
-		// Delete texture
-		DestroyTexture(g_Texture);
 
 		// Shutdown
 		Delete(g_Root);
