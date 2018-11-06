@@ -4,8 +4,7 @@
 #include <cstdint>
 #include <GL/glew.h>
 
-DEFINE_EXCEPTION(BufferBoundException);
-DEFINE_EXCEPTION(BufferNotBoundException);
+DEFINE_EXCEPTION(BufferMapException);
 
 // TODO/NOTE: We could also use this in textures, which would allow us to monitor video memory too since we'd be using it for everything
 class Buffer
@@ -39,8 +38,8 @@ protected:
 	size_t m_Size;
 	bool m_Dynamic;
 
-	bool m_Bound;
-	Access m_BoundAccess;
+	bool m_Mapped;
+	Access m_MappedAccess;
 
 private:
 	void init(const void *data = nullptr);

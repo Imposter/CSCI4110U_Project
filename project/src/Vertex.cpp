@@ -58,6 +58,10 @@ VertexArray::VertexArray(std::vector<VertexAttribute> attributes)
 	: m_ID(0), m_Attributes(std::move(attributes)), m_Enabled(false), m_Stride(0)
 {
 	init();
+
+	// Update stride
+	for (auto &attribute : m_Attributes)
+		m_Stride += attribute.GetSize() * attribute.GetCount();
 }
 
 VertexArray::~VertexArray()

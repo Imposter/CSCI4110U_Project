@@ -118,6 +118,20 @@ public:
 	{
 		return m_Count;
 	}
+
+	// Override Bind func -- TODO: These are both dirty hacks, can we fix them?
+	void Bind()
+	{
+		Buffer::Bind();
+		m_Array.Bind();
+	}
+
+	// Apply vertex array
+	void Apply()
+	{
+		Bind();
+		m_Array.Apply();
+	}
 };
 
 class IndexBuffer : public Buffer

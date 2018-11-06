@@ -13,7 +13,7 @@ void Buffer::init(const void *data)
 }
 
 Buffer::Buffer(Target target, size_t size, const void *data, bool dynamic)
-	: m_ID(0), m_Target(target), m_Size(size), m_Dynamic(dynamic), m_Bound(false), m_BoundAccess(kAccess_None)
+	: m_ID(0), m_Target(target), m_Size(size), m_Dynamic(dynamic), m_Mapped(false), m_MappedAccess(kAccess_None)
 {
 	init(data);
 }
@@ -24,7 +24,7 @@ Buffer::~Buffer()
 }
 
 Buffer::Buffer(const Buffer &copy)
-	: m_ID(0), m_Target(copy.m_Target), m_Size(copy.m_Size), m_Dynamic(copy.m_Dynamic), m_Bound(false), m_BoundAccess(kAccess_None)
+	: m_ID(0), m_Target(copy.m_Target), m_Size(copy.m_Size), m_Dynamic(copy.m_Dynamic), m_Mapped(false), m_MappedAccess(kAccess_None)
 {
 	// Init
 	init();
@@ -35,8 +35,8 @@ Buffer::Buffer(const Buffer &copy)
 
 Buffer &Buffer::operator=(const Buffer &copy)
 {
-	if (m_Bound)
-		THROW_EXCEPTION(BufferBoundException, "Cannot set buffer that is currently bound");
+	if (m_Mapped)
+		THROW_EXCEPTION(BufferMapException, "Cannot set buffer that is currently mapped");
 
 	// Copy other buffer
 	Copy(copy);
@@ -100,8 +100,8 @@ void Buffer::Copy(const Buffer &buffer)
 
 const void *Buffer::Map(unsigned int offset, size_t size, Access access)
 {
-	if (m_Bound)
-		THROW_EXCEPTION(BufferBoundException, "Buffer already bound");
+	if (m_Mapped)
+		THROW_EXCEPTION(BufferMapException, "Buffer already mapped");
 
 	auto flags = static_cast<int>(access);
 	if (access & kAccess_Write && !(access & kAccess_Read))
@@ -113,22 +113,22 @@ const void *Buffer::Map(unsigned int offset, size_t size, Access access)
 	glBindBuffer(m_Target, m_ID);
 	const auto ptr = glMapBufferRange(m_Target, offset, size, flags);
 
-	m_Bound = true;
-	m_BoundAccess = access;
+	m_Mapped = true;
+	m_MappedAccess = access;
 
 	return ptr;
 }
 
 void Buffer::Unmap(unsigned int offset, size_t size)
 {
-	if (!m_Bound)
-		THROW_EXCEPTION(BufferNotBoundException, "Buffer not bound");
+	if (!m_Mapped)
+		THROW_EXCEPTION(BufferMapException, "Buffer not mapped");
 
 	glBindBuffer(m_Target, m_ID);
-	if (m_BoundAccess & kAccess_Write && !(m_BoundAccess & kAccess_Read)) 
+	if (m_MappedAccess & kAccess_Write && !(m_MappedAccess & kAccess_Read)) 
 		glFlushMappedBufferRange(m_Target, offset, size);
 	glUnmapBuffer(m_Target);
 
-	m_Bound = false;
-	m_BoundAccess = kAccess_None;
+	m_Mapped = false;
+	m_MappedAccess = kAccess_None;
 }
