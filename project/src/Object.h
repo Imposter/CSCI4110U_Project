@@ -21,7 +21,8 @@ protected:
 
 public:
 	Object(std::string name = "Object", Object *parent = nullptr);
-	
+
+	// No copying/moving
 	Object(const Object &) = delete;
 	Object &operator=(const Object &) = delete;
 
@@ -57,6 +58,19 @@ public:
 		}
 
 		THROW_EXCEPTION(ObjectNotFoundException, "Object does not exist: %s", name.c_str());
+	}
+
+	template<typename TObj = Object>
+	std::vector<TObj *> GetChildren(const std::string &name)
+	{
+		std::vector<TObj *> result;
+		for (auto &node : m_Children)
+		{
+			if (node->m_Name == m_Name)
+				result.push_back(dynamic_cast<TObj *>(node));
+		}
+
+		return result;
 	}
 
 	template<typename TObj = Object>
