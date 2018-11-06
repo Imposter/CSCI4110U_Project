@@ -21,7 +21,7 @@ class Mesh : public Node
 {
 	std::vector<MeshVertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
-	Material *m_Material;
+	Material *m_Material; // TODO/NOTE: Do we have to send this as a pointer?
 
 	VertexArray m_VertexArray; // VAO
 	VertexBuffer<MeshVertex> m_VertexBuffer; // VBO

@@ -106,6 +106,12 @@ void MaterialResource::SetTexture(Texture *texture)
 
 void Material::init()
 {
+	// Remove existing vars
+	for (auto &var : m_Variables)
+		Delete(var);
+
+	m_Variables.clear();
+
 	// Read shader vars and make material vars for them
 	for (auto &var : m_Shader->GetVariables())
 		m_Variables.push_back(New<MaterialVariable>(var));
@@ -178,12 +184,6 @@ void Material::SetShader(Shader *shader)
 {
 	m_Shader = shader;
 
-	// Remove existing vars
-	for (auto &var : m_Variables)
-		Delete(var);
-
-	m_Variables.clear();
-
 	init(); // init vars again
 }
 
@@ -210,5 +210,12 @@ void Material::Apply()
 
 	// Apply textures to texture units
 	for (auto &res : m_Resources)
-		res->GetTexture()->Activate(res->GetSlot());
+	{
+		const auto texture = res->GetTexture();
+		const auto slot = res->GetSlot();
+		const auto var = m_Shader->GetVariable(res->GetName());
+
+		texture->Activate(slot);
+		var->SetUInt1(slot);
+	}
 }

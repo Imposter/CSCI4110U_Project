@@ -27,11 +27,11 @@ glm::mat4 g_ProjectionMatrix;
 Window *g_Window;
 
 GraphicsManager *g_GraphicsManager;
-Shader *g_Shader;
-
 Object *g_Root;
-Object *g_Square;
 
+// App
+Shader *g_Shader;
+Material *g_Material;
 Texture *g_Texture;
 
 Mesh *g_Mesh;
@@ -72,12 +72,6 @@ static void WindowRender()
 
 	// Turn on depth buffering
 	glEnable(GL_DEPTH_TEST);
-
-	// Bind texture
-	g_Texture->Bind();
-
-	// Activate our shader program
-	g_Shader->Use();
 
 	// Render
 	g_Mesh->Render(nullptr);
@@ -258,16 +252,17 @@ int main(int argc, char **argv)
 
 	// Create graphics manager
 	g_GraphicsManager = New<GraphicsManager>("data");
+
+	// Create shader
 	g_Shader = g_GraphicsManager->GetShader("main");
 
-	// Create objects
-	g_Square = g_Root->CreateChild<Object>("Square");
-	g_Square->GetTransform()->SetScale({ 1.0f, 1.0f, 1.0f });
-	g_Square->GetTransform()->SetPosition({ 0.0f, 0.0f, 0.0f });
-	g_Square->GetTransform()->SetRotation(glm::quat({ 0.0f, 0.0f, 0.0f }));
+	// Create material
+	// TODO/NOTE: How do we manage this...? -- Figure it out! For now we can manage memory ourselves
+	g_Material = New<Material>(g_Shader);
 
-	// Create texture
+	// Create texture and set as texture for material
 	g_Texture = g_GraphicsManager->GetTexture("container");
+	g_Material->SetTexture("texture1", g_Texture);
 
 	// Generate mesh
 	{
@@ -279,7 +274,7 @@ int main(int argc, char **argv)
 		indices.resize(sizeof(g_SquareIndices) / sizeof(float));
 		memcpy(indices.data(), g_SquareIndices, sizeof(g_SquareIndices));
 
-		g_Mesh = New<Mesh>("SquareMesh", vertices, indices);
+		g_Mesh = New<Mesh>("SquareMesh", vertices, indices, g_Material);
 		g_Mesh->Compile();
 	}
 
@@ -290,6 +285,9 @@ int main(int argc, char **argv)
 	{
 		// Delete mesh
 		Delete(g_Mesh);
+
+		// Delete material
+		Delete(g_Material);
 
 		// Shutdown
 		Delete(g_Root);
