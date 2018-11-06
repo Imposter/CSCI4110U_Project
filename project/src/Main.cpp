@@ -112,6 +112,85 @@ static void WindowKeyDown(KeyEventArgs &args)
 	}
 }
 
+#ifdef DEBUG
+void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+	const GLchar *message, const void *userParam)
+{
+	const char *sourceStr;
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		sourceStr = "API";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		sourceStr = "Window";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		sourceStr = "Shader";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		sourceStr = "3rd Party";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		sourceStr = "Application";
+		break;
+	default:
+		sourceStr = "Other";
+		break;
+	}
+
+	const char *typeStr;
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+		typeStr = "Error"; 
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		typeStr = "Deprecated Behaviour";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		typeStr = "Undefined Behaviour";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		typeStr = "Portability";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		typeStr = "Performance"; 
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		typeStr = "Marker";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP: 
+		typeStr = "Push Group";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		typeStr = "Pop Group";
+		break;
+	default:
+		typeStr = "Other";
+		break;
+	}
+
+	const char *severityStr;
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		severityStr = "High"; 
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		severityStr = "Medium"; 
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		severityStr = "Low"; 
+		break;
+	default:
+		severityStr = "Notification";
+	}
+
+	LOG_TRACE("OpenGL", "[%s][%s] %s: %s", sourceStr, severityStr, typeStr, message);
+}
+#endif
+
 int main(int argc, char **argv)
 {
 	// Initialize logging
@@ -170,6 +249,11 @@ int main(int argc, char **argv)
 	LOG_INFO("Main", "Using GLEW %s", glewGetString(GLEW_VERSION));
 	LOG_INFO("Main", "Using OpenGL %s", glGetString(GL_VERSION));
 
+#ifdef DEBUG
+	// Set debug callback
+	glDebugMessageCallback(DebugCallback, nullptr);
+#endif
+
 	// Create the view matrix (position and orient the camera)
 	g_ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 25.0f), Zero, Up);
 
@@ -205,7 +289,7 @@ int main(int argc, char **argv)
 		// Bind buffers
 		glBindBuffer(GL_ARRAY_BUFFER, g_SquareVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_SquareVertices), g_SquareVertices, GL_STATIC_DRAW);
-		
+
 		// TODO/NOTE: We will not need this for meshes/interleaved VBOs, we might be able to make a basic buffer class
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_SquareEBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_SquareIndices), g_SquareIndices, GL_STATIC_DRAW);
