@@ -279,7 +279,7 @@ int main(int argc, char **argv)
 		indices.resize(sizeof(g_SquareIndices) / sizeof(float));
 		memcpy(indices.data(), g_SquareIndices, sizeof(g_SquareIndices));
 
-		g_Mesh = New<Mesh>("SquareMesh", vertices, indices, std::vector<Texture *>());
+		g_Mesh = New<Mesh>("SquareMesh", vertices, indices);
 		g_Mesh->Compile();
 	}
 

@@ -1,5 +1,10 @@
 #include "Node.h"
 
+Node::Node(std::string name, Node *parent)
+	: m_Name(name), m_Parent(parent)
+{
+}
+
 Node *Node::GetParent() const
 {
 	return m_Parent;

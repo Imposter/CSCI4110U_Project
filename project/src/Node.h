@@ -19,6 +19,8 @@ class Node
 	std::vector<Node *> m_Children;
 
 public:
+	Node(std::string name = "Node", Node *parent = nullptr);
+
 	Node *GetParent() const;
 
 	void AddChild(Node *node);

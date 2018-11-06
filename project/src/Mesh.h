@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vertex.h"
-#include "Texture.h"
+#include "Material.h"
 #include "Node.h"
 #include <glm/glm.hpp>
 
@@ -19,18 +19,17 @@ struct MeshVertex
 
 class Mesh : public Node
 {
-	std::string m_Name;
 	std::vector<MeshVertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
-	std::vector<Texture *> m_Textures;
+	Material *m_Material;
 
 	VertexArray m_VertexArray; // VAO
 	VertexBuffer<MeshVertex> m_VertexBuffer; // VBO
 	IndexBuffer m_IndexBuffer; // EBO
 
 public:
-	Mesh(std::string name, std::vector<MeshVertex> vertices, std::vector<unsigned int> indices, std::vector<Texture *> textures);
-	~Mesh();
+	Mesh(std::string name, std::vector<MeshVertex> vertices, std::vector<unsigned int> indices, Material *material = nullptr);
+	~Mesh() = default;
 
 	// No copying/moving
 	Mesh(const Mesh &) = delete;

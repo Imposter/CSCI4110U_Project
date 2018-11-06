@@ -1,5 +1,4 @@
 #include "Shader.h"
-#include "Log.h"
 #include "Memory.h"
 #include <utility>
 
@@ -252,6 +251,11 @@ ShaderVariable *Shader::GetVariable(const std::string &name) const
 	THROW_EXCEPTION(ShaderVariableNotFoundException, "Variable %s not found", name.c_str());
 }
 
+std::vector<ShaderVariable *> Shader::GetVariables() const
+{
+	return m_Variables;
+}
+
 void Shader::Compile()
 {
 	// Compile shaders
@@ -286,8 +290,6 @@ void Shader::Compile()
 	GLint count;
 	glGetProgramiv(m_ID, GL_ACTIVE_UNIFORMS, &count);
 
-	LOG_TRACE("Shader", "Shader %s has %d variable(s)", m_Name.c_str(), count);
-
 	for (auto i = 0; i < count; i++)
 	{
 		// Get uniform information
@@ -300,8 +302,6 @@ void Shader::Compile()
 
 		glGetActiveUniform(m_ID, static_cast<GLuint>(i), maxNameLength, &varNameLength, &size, &type, const_cast<char *>(varName.c_str()));
 		varName.resize(varNameLength);
-
-		LOG_TRACE("Shader", "- Variable %s of type %d", varName.c_str(), type);
 
 		// Store
 		m_Variables.push_back(New<ShaderVariable>(i, varName));

@@ -20,7 +20,6 @@ public:
 	const GLuint &GetID() const;
 	const std::string &GetName() const;
 
-	// TODO: Make simpler/cleaner function names
 	void SetFloat1(float f1) const;
 	void SetFloat2(float f1, float f2) const;
 	void SetFloat3(float f1, float f2, float f3) const;
@@ -103,6 +102,7 @@ public:
 	const GLuint &GetID() const;
 
 	ShaderVariable *GetVariable(const std::string &name) const;
+	std::vector<ShaderVariable *> GetVariables() const;
 
 	void Compile();
 	void Use();

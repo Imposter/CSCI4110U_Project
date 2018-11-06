@@ -20,20 +20,12 @@ std::vector<VertexAttribute> MeshVertex::GetAttributes()
 	};
 }
 
-// TODO: Test buffers, replace texture code with buffers
-
-Mesh::Mesh(std::string name, std::vector<MeshVertex> vertices, std::vector<unsigned> indices, std::vector<Texture *> textures)
-	: m_Name(std::move(name)), m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), 
-	m_Textures(std::move(textures)), m_VertexArray(MeshVertex::GetAttributes()), 
+Mesh::Mesh(std::string name, std::vector<MeshVertex> vertices, std::vector<unsigned> indices, Material *material)
+	: Node(name), m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), 
+	m_Material(material), m_VertexArray(MeshVertex::GetAttributes()), 
 	m_VertexBuffer(&m_VertexArray, m_Vertices.data(), m_Vertices.size()),
 	m_IndexBuffer(m_Indices.data(), m_Indices.size())
 {
-}
-
-Mesh::~Mesh()
-{
-	// TODO: Destroy?
-
 }
 
 void Mesh::Compile()
@@ -48,14 +40,13 @@ void Mesh::Compile()
 	m_VertexArray.Apply();
 }
 
-// TODO/NOTE, don't we have to set/get materials for each mesh? -- we should be able to get material from 
-// TODO/NOTE: graphics manager and set its variables within the shader
 void Mesh::Render(RenderContext *context)
 {
-	// Render vertices
-	m_VertexArray.Bind();
+	// Apply material
+	if (m_Material)	m_Material->Apply();
 
-	// TODO: Set textures
+	// Bind vertex array
+	m_VertexArray.Bind();
 
 	// Render
 	glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr);
