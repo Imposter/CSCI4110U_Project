@@ -36,8 +36,7 @@ Object *g_Square;
 
 Texture *g_Texture;
 
-// Test
-//Mesh *g_Mesh;
+Mesh *g_Mesh;
 
 // Square
 float g_SquareVertices[] = {
@@ -52,10 +51,6 @@ unsigned int g_SquareIndices[] = {
 	0, 1, 3, // First triangle
 	1, 2, 3  // Second triangle
 };
-
-VertexArray *g_SquareVAO;
-Buffer *g_SquareVBO;
-Buffer *g_SquareEBO;
 
 static void Update()
 {
@@ -87,10 +82,7 @@ static void WindowRender()
 	g_Shader->Use();
 
 	// Render
-	//g_Mesh->Render(nullptr); // TODO/NOTE: Partly works
-
-	g_SquareVAO->Bind();
-	glDrawElements(GL_TRIANGLES, sizeof(g_SquareIndices) / sizeof(float), GL_UNSIGNED_INT, 0);
+	g_Mesh->Render(nullptr);
 
 	// Make the draw buffer to display buffer
 	g_Window->SwapBuffers();
@@ -149,7 +141,7 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 	switch (type)
 	{
 	case GL_DEBUG_TYPE_ERROR:
-		typeStr = "Error"; 
+		typeStr = "Error";
 		break;
 	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
 		typeStr = "Deprecated Behaviour";
@@ -161,12 +153,12 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 		typeStr = "Portability";
 		break;
 	case GL_DEBUG_TYPE_PERFORMANCE:
-		typeStr = "Performance"; 
+		typeStr = "Performance";
 		break;
 	case GL_DEBUG_TYPE_MARKER:
 		typeStr = "Marker";
 		break;
-	case GL_DEBUG_TYPE_PUSH_GROUP: 
+	case GL_DEBUG_TYPE_PUSH_GROUP:
 		typeStr = "Push Group";
 		break;
 	case GL_DEBUG_TYPE_POP_GROUP:
@@ -181,13 +173,13 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 	switch (severity)
 	{
 	case GL_DEBUG_SEVERITY_HIGH:
-		severityStr = "High"; 
+		severityStr = "High";
 		break;
 	case GL_DEBUG_SEVERITY_MEDIUM:
-		severityStr = "Medium"; 
+		severityStr = "Medium";
 		break;
 	case GL_DEBUG_SEVERITY_LOW:
-		severityStr = "Low"; 
+		severityStr = "Low";
 		break;
 	default:
 		severityStr = "Notification";
@@ -196,6 +188,26 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 	LOG_TRACE("OpenGL", "[%s][%s] %s: %s", sourceStr, severityStr, typeStr, message);
 }
 #endif
+
+// TEST
+void hexdump(void *ptr, int buflen) {
+	unsigned char *buf = (unsigned char*)ptr;
+	int i, j;
+	for (i = 0; i < buflen; i += 16) {
+		printf("%06x: ", i);
+		for (j = 0; j < 16; j++)
+			if (i + j < buflen)
+				printf("%02x ", buf[i + j]);
+			else
+				printf("   ");
+		printf(" ");
+		for (j = 0; j < 16; j++)
+			if (i + j < buflen)
+				printf("%c", isprint(buf[i + j]) ? buf[i + j] : '.');
+		printf("\n");
+	}
+}
+
 
 int main(int argc, char **argv)
 {
@@ -282,37 +294,15 @@ int main(int argc, char **argv)
 	// Generate mesh
 	{
 		std::vector<MeshVertex> vertices;
-		for (size_t i = 0; i < sizeof(g_SquareVertices) / sizeof(MeshVertex); i++)
-		{
-			MeshVertex v;
-			v.Position = glm::vec3(g_SquareVertices[i + 0], g_SquareVertices[i + 1], g_SquareVertices[i + 2]);
-			v.Normal = glm::vec3(g_SquareVertices[i + 3], g_SquareVertices[i + 4], g_SquareVertices[i + 5]); // Color
-			v.TexCoords = glm::vec2(g_SquareVertices[i + 6], g_SquareVertices[i + 7]);
-
-			vertices.push_back(v);
-		}
-
-		LOG_TRACE("Main", "sizeof(MeshVertex)=%d", sizeof(MeshVertex));
+		vertices.resize(sizeof(g_SquareVertices) / sizeof(MeshVertex));
+		memcpy(vertices.data(), g_SquareVertices, sizeof(g_SquareVertices));
 
 		std::vector<unsigned int> indices;
-		for (size_t i = 0; i < sizeof(g_SquareIndices) / sizeof(float); i++)
-		{
-			indices.push_back(g_SquareIndices[i]);
-		}
+		indices.resize(sizeof(g_SquareIndices) / sizeof(float));
+		memcpy(indices.data(), g_SquareIndices, sizeof(g_SquareIndices));
 
-		//g_Mesh = New<Mesh>("SquareMesh", vertices, indices, std::vector<Texture *>());// TODO/NOTE: Partly works...
-		//g_Mesh->Compile();
-	}
-
-	{
-		g_SquareVAO = New<VertexArray>(MeshVertex::GetAttributes());
-
-		g_SquareVAO->Bind();
-
-		g_SquareVBO = New<Buffer>(Buffer::kTarget_ArrayBuffer, sizeof(g_SquareVertices), g_SquareVertices);
-		g_SquareEBO = New<Buffer>(Buffer::kTarget_ElementArrayBuffer, sizeof(g_SquareIndices), g_SquareIndices);
-
-		g_SquareVAO->Apply();
+		g_Mesh = New<Mesh>("SquareMesh", vertices, indices, std::vector<Texture *>());
+		g_Mesh->Compile();
 	}
 
 	// Run main loop
@@ -320,13 +310,8 @@ int main(int argc, char **argv)
 
 	try
 	{
-		// Delete buffers
-		Delete(g_SquareVAO);
-		Delete(g_SquareEBO);
-		Delete(g_SquareVBO);
-
 		// Delete mesh
-		//Delete(g_Mesh);
+		Delete(g_Mesh);
 
 		// Delete texture
 		DestroyTexture(g_Texture);

@@ -4,6 +4,7 @@ Texture::Texture(unsigned int width, unsigned int height, Format format, const v
 	: m_ID(0), m_Width(width), m_Height(height), m_Format(format), m_WrapModeS(kWrapMode_Repeat), m_WrapModeT(kWrapMode_Repeat), 
 	m_FilterModeMin(kFilterMode_NearestMipmapLinear), m_FilterModeMag(kFilterMode_Linear)
 {
+	// TODO: Use buffers for this
 	// Generate texture buffer
 	glGenTextures(1, &m_ID);
 	glBindTexture(GL_TEXTURE_2D, m_ID);

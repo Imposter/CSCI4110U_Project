@@ -64,21 +64,21 @@ public:
 	void Apply();
 };
 
-// In OpenGL 3.0, every Vertex Buffer needs its own VertexArray
+// In OpenGL 3.0, every Vertex Buffer needs its own VertexArray?
 template<typename TVertex>
 class VertexBuffer : public Buffer
 {
-	VertexArray m_Array;
+	VertexArray *m_Array;
 	unsigned int m_Count;
 
 public:
-	VertexBuffer(std::vector<VertexAttribute> attributes, unsigned int count)
-		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count), m_Array(attributes), m_Count(count)
+	VertexBuffer(VertexArray *vertexArray, unsigned int count)
+		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count), m_Array(vertexArray), m_Count(count)
 	{
 	}
 
-	VertexBuffer(std::vector<VertexAttribute> attributes, const void *data, unsigned int count)
-		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count, data), m_Array(attributes), m_Count(count)
+	VertexBuffer(VertexArray *vertexArray, const void *data, unsigned int count)
+		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count, data), m_Array(vertexArray), m_Count(count)
 	{
 	}
 
@@ -117,20 +117,6 @@ public:
 	unsigned int GetCount() const
 	{
 		return m_Count;
-	}
-
-	// Override Bind func -- TODO: These are both dirty hacks, can we fix them?
-	void Bind()
-	{
-		Buffer::Bind();
-		m_Array.Bind();
-	}
-
-	// Apply vertex array
-	void Apply()
-	{
-		Bind();
-		m_Array.Apply();
 	}
 };
 

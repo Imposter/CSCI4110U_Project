@@ -29,4 +29,6 @@ public:
 	void EndScene();
 
 	Shader *GetShader(const std::string &name);
-};
+}; 
+// TODO/NOTE: We could still remove this entirely and pass shaders manually to Node::Render, since we're calling
+// TODO/NOTE: OpenGL functions directly anyways
