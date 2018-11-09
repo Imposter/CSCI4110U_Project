@@ -3,7 +3,9 @@
 #include "Window.h"
 #include "GraphicsManager.h"
 #include "Object.h"
-#include "Mesh.h"
+
+// test
+#include "ModelUtil.h"
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -19,10 +21,12 @@
 // Constants
 const glm::vec3 Zero(0.0f, 0.0f, 0.0f);
 const glm::vec3 Up(0.0f, 1.0f, 0.0f);
+const glm::vec3 EyePosition(10.0f, 5.0f, 10.0f);
 
 // Program variables
 glm::mat4 g_ViewMatrix;
 glm::mat4 g_ProjectionMatrix;
+glm::mat4 g_ModelMatrix;
 
 Window *g_Window;
 
@@ -31,30 +35,16 @@ Object *g_Root;
 
 // App
 Shader *g_Shader;
-Material *g_Material;
-Texture *g_Texture;
-
+Model *g_Model;
 Mesh *g_Mesh;
-
-// Square
-float g_SquareVertices[] = {
-	// Positions          // Colors           // Texture coords
-	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top right
-	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom right
-	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom left
-	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top left 
-};
-
-unsigned int g_SquareIndices[] = {
-	0, 1, 3, // First triangle
-	1, 2, 3  // Second triangle
-};
 
 static void Update()
 {
 	const auto milliseconds = glutGet(GLUT_ELAPSED_TIME);
 
-	// TODO: Transform updates
+	// Transform updates
+	g_ModelMatrix = glm::mat4(1.0f);
+	g_ModelMatrix = glm::scale(g_ModelMatrix, glm::vec3(1.0f));
 
 	glutPostRedisplay();
 }
@@ -73,8 +63,14 @@ static void WindowRender()
 	// Turn on depth buffering
 	glEnable(GL_DEPTH_TEST);
 
+	// Update shader
+	g_Shader->Use();
+	g_Shader->GetVariable("model")->SetVecMatrixFloat4(1, false, &g_ModelMatrix[0][0]);
+	g_Shader->GetVariable("view")->SetVecMatrixFloat4(1, false, &g_ViewMatrix[0][0]);
+	g_Shader->GetVariable("projection")->SetVecMatrixFloat4(1, false, &g_ProjectionMatrix[0][0]);
+
 	// Render
-	g_Mesh->Render(nullptr);
+	g_Mesh->Render(nullptr);//g_Model->Render(nullptr);
 
 	// Make the draw buffer to display buffer
 	g_Window->SwapBuffers();
@@ -242,10 +238,16 @@ int main(int argc, char **argv)
 #ifdef DEBUG
 	// Set debug callback
 	glDebugMessageCallback(DebugCallback, nullptr);
+
+	// Enable debug mode
+	glEnable(GL_DEBUG_OUTPUT);
 #endif
 
+	// Wireframe for mesh testing
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// Create the view matrix (position and orient the camera)
-	g_ViewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 25.0f), Zero, Up);
+	g_ViewMatrix = glm::lookAt(EyePosition, Zero, Up);
 
 	// Create root object
 	g_Root = New<Object>("Root");
@@ -256,26 +258,80 @@ int main(int argc, char **argv)
 	// Create shader
 	g_Shader = g_GraphicsManager->GetShader("main");
 
-	// Create material
-	// TODO/NOTE: How do we manage this...? -- Figure it out! For now we can manage memory ourselves
-	g_Material = New<Material>(g_Shader);
+	// Load model
+	//g_Model = LoadModelFromFile("data/models", "cube");
 
-	// Create texture and set as texture for material
-	g_Texture = g_GraphicsManager->GetTexture("container");
-	g_Material->SetTexture("texture1", g_Texture);
-
-	// Generate mesh
 	{
+		// Create test cube mesh
 		std::vector<MeshVertex> vertices;
-		vertices.resize(sizeof(g_SquareVertices) / sizeof(MeshVertex));
-		memcpy(vertices.data(), g_SquareVertices, sizeof(g_SquareVertices));
 
-		std::vector<unsigned int> indices;
-		indices.resize(sizeof(g_SquareIndices) / sizeof(float));
-		memcpy(indices.data(), g_SquareIndices, sizeof(g_SquareIndices));
+		// Front
+		{
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(-1.0f, -1.0f, 1.0f);
+				vertices.push_back(v);
+			}
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(1.0f, -1.0f, 1.0f);
+				vertices.push_back(v);
+			}
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(-1.0f, 1.0f, 1.0f);
+				vertices.push_back(v);
+			}
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(1.0f, 1.0f, 1.0f);
+				vertices.push_back(v);
+			}
+		}
+		// Back
+		{
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(-1.0f, -1.0f, -1.0f);
+				vertices.push_back(v);
+			}
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(1.0f, -1.0f, -1.0f);
+				vertices.push_back(v);
+			}
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(-1.0f, 1.0f, -1.0f);
+				vertices.push_back(v);
+			}
+			{
+				MeshVertex v;
+				v.Position = glm::vec3(1.0f, 1.0f, -1.0f);
+				vertices.push_back(v);
+			}
+		}
 
-		g_Mesh = New<Mesh>("SquareMesh", vertices, indices, g_Material);
-		g_Mesh->Compile();
+		// Set all the vertices to red
+		for (auto &v : vertices)
+			v.Colour = glm::vec3(1.0f, 0.0f, 0.0f);
+
+		std::vector<unsigned int> indices = { 
+			0, 1, 2,   // front
+			3, 2, 1,
+			5, 6, 7,   // back
+			5, 4, 6,
+			1, 7, 3,   // right
+			1, 5, 7,
+			4, 0, 2,   // left
+			4, 2, 6,
+			2, 7, 6,   // top
+			2, 3, 7,
+			0, 4, 5,   // bottom
+			0, 5, 1 
+		};
+
+		g_Mesh = New<Mesh>("Test", vertices, indices);
 	}
 
 	// Run main loop
@@ -283,11 +339,11 @@ int main(int argc, char **argv)
 
 	try
 	{
+		// Delete model
+		//DestroyModel(g_Model);
+
 		// Delete mesh
 		Delete(g_Mesh);
-
-		// Delete material
-		Delete(g_Material);
 
 		// Shutdown
 		Delete(g_Root);

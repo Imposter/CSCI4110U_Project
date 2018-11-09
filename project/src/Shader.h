@@ -7,7 +7,9 @@
 
 // Exception definitions
 DEFINE_EXCEPTION(ShaderCompileException);
+DEFINE_EXCEPTION(ShaderLinkException);
 DEFINE_EXCEPTION(ShaderNotCompiledException);
+DEFINE_EXCEPTION(ShaderVariableNotFoundException);
 
 class ShaderVariable
 {
@@ -20,6 +22,7 @@ public:
 	const GLuint &GetID() const;
 	const std::string &GetName() const;
 
+	// TODO: Make friendlier functions
 	void SetFloat1(float f1) const;
 	void SetFloat2(float f1, float f2) const;
 	void SetFloat3(float f1, float f2, float f3) const;
@@ -60,8 +63,6 @@ public:
 	void SetVecMatrixFloat3x4(unsigned int count, bool transpose, const float *val) const;
 	void SetVecMatrixFloat4x3(unsigned int count, bool transpose, const float *val) const;
 };
-
-DEFINE_EXCEPTION(ShaderVariableNotFoundException);
 
 enum ShaderType
 {

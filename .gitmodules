@@ -1,6 +1,6 @@
 [submodule "dependencies/RapidJSON"]
 	path = dependencies/RapidJSON
-	url = https://github.com/Tencent/rapidjson.git
-[submodule "dependencies/TinyOBJLoader"]
-	path = dependencies/TinyOBJLoader
-	url = https://github.com/syoyo/tinyobjloader.git
+	url = https://github.com/Tencent/rapidjson
+[submodule "dependencies/AssImp"]
+	path = dependencies/AssImp
+	url = https://github.com/assimp/assimp

@@ -37,25 +37,32 @@ void VertexArray::init()
 
 	// Bind vertex array
 	glBindVertexArray(m_ID);
+
+	unsigned int position = 0;
+	for (size_t i = 0; i < m_Attributes.size(); i++)
+	{
+		const auto &attribute = m_Attributes[i];
+		glEnableVertexAttribArray(i);
+		glVertexAttribFormat(i, attribute.GetCount(), attribute.GetType(), attribute.IsNormalized(), position);
+		glVertexAttribBinding(i, 0); // Use binding for VBO 0
+
+		// Update pointer position
+		position += attribute.GetSize() * attribute.GetCount();
+	}
 }
 
 void VertexArray::shutdown()
 {
 	// Disable attribute pointers
-	if (m_Enabled)
-	{
-		for (size_t i = 0; i < m_Attributes.size(); i++)
-			glDisableVertexAttribArray(i);
-
-		m_Enabled = false;
-	}
+	for (size_t i = 0; i < m_Attributes.size(); i++)
+		glDisableVertexAttribArray(i);
 
 	// Unbind
 	glDeleteVertexArrays(1, &m_ID);
 }
 
 VertexArray::VertexArray(std::vector<VertexAttribute> attributes)
-	: m_ID(0), m_Attributes(std::move(attributes)), m_Enabled(false), m_Stride(0)
+	: m_ID(0), m_Attributes(std::move(attributes)), m_Stride(0)
 {
 	init();
 
@@ -72,11 +79,9 @@ VertexArray::~VertexArray()
 }
 
 VertexArray::VertexArray(const VertexArray &copy)
-	: m_ID(0), m_Attributes(copy.m_Attributes), m_Enabled(copy.m_Enabled), m_Stride(copy.m_Stride)
+	: m_ID(0), m_Attributes(copy.m_Attributes), m_Stride(copy.m_Stride)
 {
 	init();
-
-	if (m_Enabled) Apply();
 }
 
 VertexArray &VertexArray::operator=(const VertexArray &copy)
@@ -90,8 +95,6 @@ VertexArray &VertexArray::operator=(const VertexArray &copy)
 
 	init();
 
-	if (m_Enabled) Apply();
-
 	return *this;
 }
 
@@ -100,35 +103,13 @@ std::vector<VertexAttribute> VertexArray::GetAttributes() const
 	return m_Attributes;
 }
 
-void VertexArray::AddAttribute(const VertexAttribute &attribute)
+unsigned int VertexArray::GetStride() const
 {
-	m_Attributes.push_back(attribute);
-
-	// Update stride
-	m_Stride += attribute.GetSize() * attribute.GetCount();
+	return m_Stride;
 }
 
 void VertexArray::Bind()
 {
 	// Set active
 	glBindVertexArray(m_ID);
-}
-
-void VertexArray::Apply()
-{
-	// Set active
-	glBindVertexArray(m_ID);
-
-	unsigned int position = 0;
-	for (size_t i = 0; i < m_Attributes.size(); i++)
-	{
-		const auto &attribute = m_Attributes[i];
-		glVertexAttribPointer(i, attribute.GetCount(), attribute.GetType(), attribute.IsNormalized(), m_Stride, reinterpret_cast<void *>(position));
-		glEnableVertexAttribArray(i);
-
-		// Update pointer position
-		position += attribute.GetSize() * attribute.GetCount();
-	}
-
-	m_Enabled = true;
 }

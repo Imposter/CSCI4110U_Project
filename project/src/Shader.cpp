@@ -192,11 +192,11 @@ GLuint Shader::compileShader(GLenum type, const void *source)
 	glCompileShader(shaderId);
 
 	// Check if there were any compilation errors
-	int result;
+	GLint result = 0;
 	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE)
 	{
-		int errorLength;
+		GLint errorLength = 0;
 		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &errorLength);
 
 		std::string errorMessage;
@@ -274,6 +274,31 @@ void Shader::Compile()
 		glAttachShader(m_ID, id);
 	glLinkProgram(m_ID);
 	glValidateProgram(m_ID);
+
+	// Check if there were any linking errors
+	GLint result = 0;
+	glGetProgramiv(m_ID, GL_LINK_STATUS, &result);
+	if (result == GL_FALSE)
+	{
+		GLint errorLength = 0;
+		glGetProgramiv(m_ID, GL_INFO_LOG_LENGTH, &errorLength);
+
+		std::string errorMessage;
+		errorMessage.resize(errorLength);
+		glGetProgramInfoLog(m_ID, errorLength, &errorLength, const_cast<char *>(errorMessage.c_str()));
+
+		// Delete shaders
+		for (auto &id : shaderIds)
+		{
+			glDetachShader(m_ID, id);
+			glDeleteShader(id);
+		}
+
+		// Delete program
+		glDeleteProgram(m_ID);
+
+		THROW_EXCEPTION(ShaderLinkException, "Shader linking failed: %s", errorMessage.c_str());
+	}
 
 	// Delete shaders
 	for (auto &id : shaderIds)

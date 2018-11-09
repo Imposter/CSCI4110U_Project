@@ -38,7 +38,6 @@ class VertexArray
 {
 	GLuint m_ID;
 	std::vector<VertexAttribute> m_Attributes;
-	bool m_Enabled;
 	unsigned int m_Stride;
 
 	void init();
@@ -56,12 +55,9 @@ public:
 	VertexArray &operator=(const VertexArray &&) = delete;
 
 	std::vector<VertexAttribute> GetAttributes() const;
-	void AddAttribute(const VertexAttribute &attribute);
+	unsigned int GetStride() const;
 
 	void Bind();
-
-	// NOTE: An array buffer (VBO) for this array should already be bound before calling this function
-	void Apply();
 };
 
 // In OpenGL 3.0, every Vertex Buffer needs its own VertexArray?
@@ -118,6 +114,11 @@ public:
 	{
 		return m_Count;
 	}
+
+	void Bind()
+	{
+		glBindVertexBuffer(0, m_ID, 0, m_Array->GetStride());
+	}
 };
 
 class IndexBuffer : public Buffer
@@ -169,5 +170,23 @@ public:
 	unsigned int GetCount() const
 	{
 		return m_Count;
+	}
+};
+
+template<typename TVertex>
+class VertexFormat
+{
+	std::vector<VertexAttribute> m_Attributes;
+
+public:
+	VertexFormat(std::vector<VertexAttribute> attributes)
+		: m_Attributes(attributes)
+	{
+	}
+
+	VertexArray *GetArray() const
+	{
+		static VertexArray instance(m_Attributes);
+		return &instance;
 	}
 };

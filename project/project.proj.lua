@@ -28,6 +28,7 @@ project "Project"
 	links {
 		"GLEW",
 		"FreeGLUT",
+		"AssImp",
 		"opengl32.lib"
 	}
 	

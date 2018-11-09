@@ -82,3 +82,5 @@ public:
 
 	void Apply();
 };
+
+// TODO: MaterialDefinition

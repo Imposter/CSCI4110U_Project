@@ -216,6 +216,6 @@ void Material::Apply()
 		const auto var = m_Shader->GetVariable(res->GetName());
 
 		texture->Activate(slot);
-		var->SetUInt1(slot);
+		var->SetInt1(slot);
 	}
 }
