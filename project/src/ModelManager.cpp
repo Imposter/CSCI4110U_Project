@@ -40,10 +40,10 @@ Mesh *ModelManager::processMesh(Material *material, aiMesh *mesh, const aiScene 
 		// Color
 		if (mesh->HasVertexColors(i))
 		{
-			v.Colour.r = mesh->mColors[i]->r;
-			v.Colour.g = mesh->mColors[i]->g;
-			v.Colour.b = mesh->mColors[i]->b;
-			v.Colour.a = mesh->mColors[i]->a;
+			v.Color.r = mesh->mColors[i]->r;
+			v.Color.g = mesh->mColors[i]->g;
+			v.Color.b = mesh->mColors[i]->b;
+			v.Color.a = mesh->mColors[i]->a;
 		}
 
 		// Normal
@@ -151,7 +151,7 @@ Material *ModelManager::processMaterial(std::map<std::string, std::string> &mate
 		}
 	}
 
-	// Textures (only one per property is supported)
+	// Textures (NOTE: only one per property is supported)
 	{
 		aiString path;
 		aiTextureMapping mapping;

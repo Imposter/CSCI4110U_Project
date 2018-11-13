@@ -2,8 +2,7 @@
 #include "Memory.h"
 
 MaterialVariable::MaterialVariable(ShaderVariable *var)
-	: m_ShaderVariable(var), m_FloatValue1(0.0f), m_FloatValue2(0.0f), m_FloatValue3(0.0f), 
-	m_FloatValue4(0.0f), m_MatrixValue4x4{0.0f}
+	: m_ShaderVariable(var), m_Value(0.0f)
 {
 }
 
@@ -12,71 +11,142 @@ const std::string &MaterialVariable::GetName() const
 	return m_ShaderVariable->GetName();
 }
 
-void MaterialVariable::SetFloat1(float v1)
+// TODO: Move caching to ShaderVariable
+void MaterialVariable::SetBool(bool v)
 {
-	m_FloatValue1 = v1;
-	m_ShaderVariable->SetFloat1(v1);
+	m_Value[0].x = static_cast<float>(v);
+	m_ShaderVariable->SetBool(v);
 }
 
-void MaterialVariable::SetFloat2(float v1, float v2)
+void MaterialVariable::SetInt(int v)
 {
-	m_FloatValue1 = v1;
-	m_FloatValue2 = v2;
-	m_ShaderVariable->SetFloat2(v1, v2);
+	m_Value[0].x = static_cast<float>(v);
+	m_ShaderVariable->SetInt(v);
 }
 
-void MaterialVariable::SetFloat3(float v1, float v2, float v3)
+void MaterialVariable::SetUInt(unsigned int v)
 {
-	m_FloatValue1 = v1;
-	m_FloatValue2 = v2;
-	m_FloatValue3 = v3;
-	m_ShaderVariable->SetFloat3(v1, v2, v3);
+	m_Value[0].x = static_cast<float>(v);
+	m_ShaderVariable->SetUInt(v);
 }
 
-void MaterialVariable::SetFloat4(float v1, float v2, float v3, float v4)
+void MaterialVariable::SetFloat(float v)
 {
-	m_FloatValue1 = v1;
-	m_FloatValue2 = v2;
-	m_FloatValue3 = v3;
-	m_FloatValue4 = v4;
-	m_ShaderVariable->SetFloat4(v1, v2, v3, v4);
+	m_Value[0].x = v;
+	m_ShaderVariable->SetFloat(v);
 }
 
-void MaterialVariable::SetFloatMat4x4(float m1[4][4])
+void MaterialVariable::SetVec2(const glm::vec2 &v)
 {
-	memcpy(m_MatrixValue4x4, m1, sizeof(m_MatrixValue4x4)); // TODO: Test
-	m_ShaderVariable->SetVecMatrixFloat4(1, false, reinterpret_cast<float *>(m1));
+	m_Value[0].x = v.x;
+	m_Value[0].y = v.y;
+	m_ShaderVariable->SetVec2(v);
 }
 
-void MaterialVariable::GetFloat1(float &v1) const
+void MaterialVariable::SetVec3(const glm::vec3 &v)
 {
-	v1 = m_FloatValue1;
+	m_Value[0].x = v.x;
+	m_Value[0].y = v.y;
+	m_Value[0].z = v.z;
+	m_ShaderVariable->SetVec3(v);
 }
 
-void MaterialVariable::GetFloat2(float &v1, float &v2) const
+void MaterialVariable::SetVec4(const glm::vec4 &v)
 {
-	v1 = m_FloatValue1;
-	v2 = m_FloatValue2;
+	m_Value[0].x = v.x;
+	m_Value[0].y = v.y;
+	m_Value[0].z = v.z;
+	m_Value[0].w = v.w;
+	m_ShaderVariable->SetVec4(v);
 }
 
-void MaterialVariable::GetFloat3(float &v1, float &v2, float &v3) const
+void MaterialVariable::SetMat4(const glm::mat4 &v)
 {
-	v1 = m_FloatValue1;
-	v2 = m_FloatValue2;
-	v3 = m_FloatValue3;
+	m_Value = v;
+	m_ShaderVariable->SetMat4(v);
 }
 
-void MaterialVariable::GetFloat4(float &v1, float &v2, float &v3, float &v4) const
+bool MaterialVariable::GetBool() const
 {
-	v1 = m_FloatValue1;
-	v2 = m_FloatValue2;
-	v3 = m_FloatValue3;
-	v4 = m_FloatValue4;
+	return static_cast<bool>(m_Value[0].x);
 }
 
-void MaterialVariable::GetFloatMat4x4(float m1[4][4]) const
+int MaterialVariable::GetInt() const
 {
-	memcpy(m1, m_MatrixValue4x4, sizeof(m_MatrixValue4x4)); // TODO: Test
+	return static_cast<int>(m_Value[0].x);
+}
+
+unsigned int MaterialVariable::GetUInt() const
+{
+	return static_cast<unsigned int>(m_Value[0].x);
+}
+
+float MaterialVariable::GetFloat() const
+{
+	return m_Value[0].x;
+}
+
+glm::vec2 MaterialVariable::GetVec2() const
+{
+	return { m_Value[0].x, m_Value[0].y };
+}
+
+glm::vec3 MaterialVariable::GetVec3() const
+{
+	return { m_Value[0].x, m_Value[0].y, m_Value[0].z };
+}
+
+glm::vec4 MaterialVariable::GetVec4() const
+{
+	return { m_Value[0].x, m_Value[0].y, m_Value[0].z, m_Value[0].w };
+}
+
+glm::mat4 MaterialVariable::GetMat4() const
+{
+	return m_Value;
+}
+
+void MaterialVariable::Apply()
+{
+	// Disable variable type checking
+	m_ShaderVariable->SetTypeCheck(false);
+
+	switch (m_ShaderVariable->GetType())
+	{
+	case kShaderVariableType_Bool:
+		m_ShaderVariable->SetBool(static_cast<bool>(m_Value[0].x));
+		break;
+	case kShaderVariableType_Int:
+	case kShaderVariableType_Sampler2D:
+		m_ShaderVariable->SetInt(static_cast<int>(m_Value[0].x));
+		break;
+	case kShaderVariableType_UInt:
+		m_ShaderVariable->SetUInt(static_cast<unsigned int>(m_Value[0].x));
+		break;
+	case kShaderVariableType_Float:
+		m_ShaderVariable->SetFloat(m_Value[0].x);
+		break;
+	case kShaderVariableType_Vec2:
+		m_ShaderVariable->SetVec2({ m_Value[0].x, m_Value[0].y });
+		break;
+	case kShaderVariableType_Vec3:
+		m_ShaderVariable->SetVec3({ m_Value[0].x, m_Value[0].y, m_Value[0].z });
+		break;
+	case kShaderVariableType_Vec4:
+		m_ShaderVariable->SetVec4(m_Value[0]);
+		break;
+	case kShaderVariableType_Mat4:
+		m_ShaderVariable->SetMat4(m_Value);
+		break;
+	default:
+		// Enable variable type checking
+		m_ShaderVariable->SetTypeCheck(true);
+
+		THROW_EXCEPTION(MaterialUnsupportedTypeException, "Unknown variable type");
+	}
+
+	// Enable variable type checking
+	m_ShaderVariable->SetTypeCheck(true);
 }
 
 MaterialResource::MaterialResource(std::string name, Texture *texture, unsigned int slot)
@@ -104,23 +174,16 @@ void MaterialResource::SetTexture(Texture *texture)
 	m_Texture = texture;
 }
 
-void Material::init()
+Material::Material(std::string name, Shader *shader)
+	: m_Name(std::move(name)), m_Shader(shader)
 {
-	// Remove existing vars
-	for (auto &var : m_Variables)
-		Delete(var);
-
-	m_Variables.clear();
-
 	// Read shader vars and make material vars for them
 	for (auto &var : m_Shader->GetVariables())
-		m_Variables.push_back(New<MaterialVariable>(var));
-}
-
-Material::Material(Shader *shader)
-	: m_Shader(shader)
-{
-	init();
+	{
+		// Only store variables if they are referring to the material
+		if (var->GetName().substr(0, strlen(MATERIAL_KEY_NAME)) == MATERIAL_KEY_NAME)
+			m_Variables.push_back(New<MaterialVariable>(var));
+	}
 }
 
 Material::~Material()
@@ -159,7 +222,7 @@ unsigned int Material::GetTextureSlot(const std::string &name) const
 }
 
 // Active texture limit is 16/32
-void Material::SetTexture(const std::string &name, Texture *texture)
+unsigned int Material::SetTexture(const std::string &name, Texture *texture)
 {
 	// Check if texture with name is already present
 	for (auto &res : m_Resources)
@@ -167,12 +230,19 @@ void Material::SetTexture(const std::string &name, Texture *texture)
 		if (res->GetName() == name)
 		{
 			res->SetTexture(texture);
-			return;
+			return res->GetSlot();
 		}
 	}
 
 	// Add resource
-	m_Resources.push_back(New<MaterialResource>(name, texture, m_Resources.size()));
+	const auto slot = m_Resources.size();
+	m_Resources.push_back(New<MaterialResource>(name, texture, slot));
+	return slot;
+}
+
+const std::string & Material::GetName() const
+{
+	return m_Name;
 }
 
 Shader *Material::GetShader() const
@@ -180,14 +250,7 @@ Shader *Material::GetShader() const
 	return m_Shader;
 }
 
-void Material::SetShader(Shader *shader)
-{
-	m_Shader = shader;
-
-	init(); // init vars again
-}
-
-MaterialVariable *Material::GetVariable(const std::string &name) const
+MaterialVariable *Material::GetVariable(const std::string &name)
 {
 	for (auto &var : m_Variables)
 	{
@@ -208,6 +271,10 @@ void Material::Apply()
 	// Use shader
 	m_Shader->Use();
 
+	// Apply material vars
+	for (auto &var : m_Variables)
+		var->Apply();
+
 	// Apply textures to texture units
 	for (auto &res : m_Resources)
 	{
@@ -216,6 +283,6 @@ void Material::Apply()
 		const auto var = m_Shader->GetVariable(res->GetName());
 
 		texture->Activate(slot);
-		var->SetInt1(slot);
+		var->SetInt(slot);
 	}
 }

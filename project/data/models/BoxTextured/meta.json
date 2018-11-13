@@ -1,0 +1,7 @@
+{
+	"name": "BoxTextured",
+	"extension": "gltf",
+	"materialMap": {
+		"Texture": "Textured"
+	}
+}

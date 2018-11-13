@@ -34,7 +34,7 @@ static void MemoryFree(T *ptr)
 
 #define MEM_ALLOC(type) MemoryAllocate<type>(typeid(type).name(), typeid(type).hash_code())
 #define MEM_ALLOC_ARRAY(type, count) MemoryAllocate<type>(typeid(type).name(), typeid(type).hash_code(), count)
-#define MEM_FREE(ptr) MemoryFree(ptr)
+#define MEM_DELETE(ptr) MemoryFree(ptr)
 
 template<typename T, typename... TArgs>
 static T *New(TArgs... args)
@@ -48,5 +48,5 @@ template<typename T>
 static void Delete(T* obj)
 {
 	obj->~T();
-	MEM_FREE(obj);
+	MEM_DELETE(obj);
 }

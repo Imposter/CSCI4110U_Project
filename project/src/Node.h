@@ -12,6 +12,7 @@ struct RenderContext
 
 DEFINE_EXCEPTION(NodeNotFoundException);
 
+// TODO/NOTE: Nodes should have transforms
 class Node
 {
 	std::string m_Name;

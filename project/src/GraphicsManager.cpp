@@ -26,8 +26,9 @@ GraphicsManager::~GraphicsManager()
 Shader *GraphicsManager::GetShader(const std::string &name)
 {
 	// Check if it is already loaded
-	if (m_Shaders.find(name) != m_Shaders.end())
-		return m_Shaders[name];
+	std::map<std::string, Shader *>::iterator it;
+	if ((it = m_Shaders.find(name)) != m_Shaders.end())
+		return it->second;
 
 	// Compile shader
 	const auto shader = LoadShaderFromFile(m_DataPath + "/shaders", name);
@@ -42,8 +43,9 @@ Shader *GraphicsManager::GetShader(const std::string &name)
 Texture *GraphicsManager::GetTexture(const std::string &name)
 {
 	// Check if it is already loaded
-	if (m_Textures.find(name) != m_Textures.end())
-		return m_Textures[name];
+	std::map<std::string, Texture *>::iterator it;
+	if ((it = m_Textures.find(name)) != m_Textures.end())
+		return it->second;
 
 	// Load texture
 	const auto texture = LoadTextureFromFile(m_DataPath + "/textures", name);

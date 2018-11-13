@@ -2,12 +2,12 @@
 #include <utility>
 
 MeshVertex::MeshVertex()
-	: Position(0.0f), Normal(0.0f), Colour(0.0f), TexCoords(0.0f)
+	: Position(0.0f), Normal(0.0f), Color(0.0f), TexCoords(0.0f)
 {
 }
 
-MeshVertex::MeshVertex(glm::vec3 p, glm::vec3 n, glm::vec3 c, glm::vec2 t)
-	: Position(p), Normal(n), Colour(c), TexCoords(t)
+MeshVertex::MeshVertex(glm::vec3 p, glm::vec3 n, glm::vec4 c, glm::vec2 t)
+	: Position(p), Normal(n), Color(c), TexCoords(t)
 {
 }
 

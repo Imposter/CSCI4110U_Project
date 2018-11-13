@@ -3,9 +3,7 @@
 #include "Window.h"
 #include "GraphicsManager.h"
 #include "Object.h"
-
-// test
-#include "ModelUtil.h"
+#include "ModelManager.h"
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -17,36 +15,57 @@
 #define WIDTH 1024
 #define HEIGHT 600
 #define FULLSCREEN false
+#define WIREFRAME false
 
 // Constants
-const glm::vec3 Zero(0.0f, 0.0f, 0.0f);
-const glm::vec3 Up(0.0f, 1.0f, 0.0f);
-const glm::vec3 EyePosition(10.0f, 5.0f, 10.0f);
+const glm::vec3 Up(0.0f, 0.0f, 1.0f);
+const glm::vec3 LookTarget(0.0f, 0.0f, 0.0f);
+const glm::vec3 EyePosition(10.0, 10.0f, 10.0f);
 
 // Program variables
+float g_LastTime;
 glm::mat4 g_ViewMatrix;
 glm::mat4 g_ProjectionMatrix;
 glm::mat4 g_ModelMatrix;
+glm::vec3 g_DirectionalLightDirection(0.0f);
+glm::vec3 g_DirectionalLightColor(1.0f, 0.0f, 0.0f);
 
 Window *g_Window;
 
 GraphicsManager *g_GraphicsManager;
-Object *g_Root;
+ModelManager *g_ModelManager;
 
 // App
 Shader *g_Shader;
 Model *g_Model;
-Mesh *g_Mesh;
 
 static void Update()
 {
-	const auto milliseconds = glutGet(GLUT_ELAPSED_TIME);
+	const auto time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+	const auto deltaTime = time - g_LastTime;
+
+	// Use shader
+	g_Shader->Use();
 
 	// Transform updates
 	g_ModelMatrix = glm::mat4(1.0f);
 	g_ModelMatrix = glm::scale(g_ModelMatrix, glm::vec3(1.0f));
 
+	// Set view position
+	g_Shader->GetVariable("u_ViewPosition")->SetVec3(EyePosition);
+
+	// Set directional light information
+	g_DirectionalLightDirection = glm::normalize(glm::vec3(sin(time) * 7.5f, cos(time) * 7.5f, 10.0f));
+	g_Shader->GetVariable("u_DirectionalLight.Enabled")->SetBool(true);
+	g_Shader->GetVariable("u_DirectionalLight.Direction")->SetVec3(g_DirectionalLightDirection);
+	g_Shader->GetVariable("u_DirectionalLight.Ambient")->SetVec3(g_DirectionalLightColor * 0.25f);
+	g_Shader->GetVariable("u_DirectionalLight.Diffuse")->SetVec3(g_DirectionalLightColor);
+	g_Shader->GetVariable("u_DirectionalLight.Specular")->SetVec3(glm::vec3(1.0f, 1.0f, 1.0f));
+	g_Shader->GetVariable("u_DirectionalLight.Intensity")->SetFloat(1.0f);
+
 	glutPostRedisplay();
+
+	g_LastTime = time;
 }
 
 static void WindowClose()
@@ -65,12 +84,12 @@ static void WindowRender()
 
 	// Update shader
 	g_Shader->Use();
-	g_Shader->GetVariable("model")->SetVecMatrixFloat4(1, false, &g_ModelMatrix[0][0]);
-	g_Shader->GetVariable("view")->SetVecMatrixFloat4(1, false, &g_ViewMatrix[0][0]);
-	g_Shader->GetVariable("projection")->SetVecMatrixFloat4(1, false, &g_ProjectionMatrix[0][0]);
+	g_Shader->GetVariable("u_Model")->SetMat4(g_ModelMatrix);
+	g_Shader->GetVariable("u_View")->SetMat4(g_ViewMatrix);
+	g_Shader->GetVariable("u_Projection")->SetMat4(g_ProjectionMatrix);
 
 	// Render
-	g_Mesh->Render(nullptr);//g_Model->Render(nullptr);
+	g_Model->Render(nullptr);
 
 	// Make the draw buffer to display buffer
 	g_Window->SwapBuffers();
@@ -220,15 +239,7 @@ int main(int argc, char **argv)
 	{
 		LOG_ERROR("Main", "OpenGL 3.0 not available");
 
-		// Delete window
-		Delete(g_Window);
-
-		// Shutdown memory subsystem
-		MemoryShutdown();
-
-		// Close log
-		LogClose();
-
+		// No cleanup
 		return 1;
 	}
 
@@ -243,95 +254,43 @@ int main(int argc, char **argv)
 	glEnable(GL_DEBUG_OUTPUT);
 #endif
 
-	// Wireframe for mesh testing
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#if WIREFRAME
+	// Wireframe mode
+	glPolygonMode(GL_FRONT, GL_LINE);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+#endif
 
 	// Create the view matrix (position and orient the camera)
-	g_ViewMatrix = glm::lookAt(EyePosition, Zero, Up);
-
-	// Create root object
-	g_Root = New<Object>("Root");
+	g_ViewMatrix = glm::lookAt(EyePosition, LookTarget, Up);
 
 	// Create graphics manager
 	g_GraphicsManager = New<GraphicsManager>("data");
 
-	// Create shader
-	g_Shader = g_GraphicsManager->GetShader("main");
-
-	// Load model
-	//g_Model = LoadModelFromFile("data/models", "cube");
-
+	try
 	{
-		// Create test cube mesh
-		std::vector<MeshVertex> vertices;
+		// Create shader
+		g_Shader = g_GraphicsManager->GetShader("Diffuse");
 
-		// Front
-		{
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(-1.0f, -1.0f, 1.0f);
-				vertices.push_back(v);
-			}
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(1.0f, -1.0f, 1.0f);
-				vertices.push_back(v);
-			}
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(-1.0f, 1.0f, 1.0f);
-				vertices.push_back(v);
-			}
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(1.0f, 1.0f, 1.0f);
-				vertices.push_back(v);
-			}
-		}
-		// Back
-		{
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(-1.0f, -1.0f, -1.0f);
-				vertices.push_back(v);
-			}
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(1.0f, -1.0f, -1.0f);
-				vertices.push_back(v);
-			}
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(-1.0f, 1.0f, -1.0f);
-				vertices.push_back(v);
-			}
-			{
-				MeshVertex v;
-				v.Position = glm::vec3(1.0f, 1.0f, -1.0f);
-				vertices.push_back(v);
-			}
-		}
+		// Create model manager
+		g_ModelManager = New<ModelManager>("data/models", g_GraphicsManager);
 
-		// Set all the vertices to red
-		for (auto &v : vertices)
-			v.Colour = glm::vec3(1.0f, 0.0f, 0.0f);
+		// Load model
+		g_Model = g_ModelManager->GetModel("Cube");
+	}
+	catch (ShaderCompileException &ex)
+	{
+		LOG_TRACE("Main", ex.what());
 
-		std::vector<unsigned int> indices = { 
-			0, 1, 2,   // front
-			3, 2, 1,
-			5, 6, 7,   // back
-			5, 4, 6,
-			1, 7, 3,   // right
-			1, 5, 7,
-			4, 0, 2,   // left
-			4, 2, 6,
-			2, 7, 6,   // top
-			2, 3, 7,
-			0, 4, 5,   // bottom
-			0, 5, 1 
-		};
+		// No cleanup
+		return 1;
+	}
+	catch (ModelLoadException &ex)
+	{
+		LOG_TRACE("Main", ex.what());
 
-		g_Mesh = New<Mesh>("Test", vertices, indices);
+		// No cleanup
+		return 1;
 	}
 
 	// Run main loop
@@ -339,14 +298,8 @@ int main(int argc, char **argv)
 
 	try
 	{
-		// Delete model
-		//DestroyModel(g_Model);
-
-		// Delete mesh
-		Delete(g_Mesh);
-
 		// Shutdown
-		Delete(g_Root);
+		Delete(g_ModelManager);
 		Delete(g_GraphicsManager);
 
 		// Close window
@@ -365,9 +318,6 @@ int main(int argc, char **argv)
 
 		// Find out what leaked
 		MemoryDebug();
-
-		// Close log
-		LogClose();
 
 		// Exit with error
 		return 1;

@@ -15,6 +15,13 @@ public:
 	GraphicsManager(std::string dataPath);
 	~GraphicsManager();
 
+	// No copying/moving
+	GraphicsManager(const GraphicsManager &) = delete;
+	GraphicsManager &operator=(const GraphicsManager &) = delete;
+
+	GraphicsManager(const GraphicsManager &&) = delete;
+	GraphicsManager &operator=(const GraphicsManager &&) = delete;
+
 	Shader *GetShader(const std::string &name);
 	Texture *GetTexture(const std::string &name);
 }; 
