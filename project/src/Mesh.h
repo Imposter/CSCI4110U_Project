@@ -9,11 +9,10 @@ struct MeshVertex
 {
 	glm::vec3 Position; // Float 3
 	glm::vec3 Normal; // Float 3
-	glm::vec4 Color; // Float 4
 	glm::vec2 TexCoords; // Float 2
 
 	MeshVertex();
-	MeshVertex(glm::vec3 p, glm::vec3 n, glm::vec4 c, glm::vec2 t);
+	MeshVertex(glm::vec3 p, glm::vec3 n, glm::vec2 t);
 };
 
 class MeshVertexFormat : public VertexFormat<MeshVertex>
@@ -23,7 +22,6 @@ public:
 		: VertexFormat<MeshVertex>({
 			{ "Position", kVertexAttributeType_Float, 3, false, sizeof(float) },
 			{ "Normal", kVertexAttributeType_Float, 3, false, sizeof(float) },
-			{ "Color", kVertexAttributeType_Float, 4, false, sizeof(float) },
 			{ "TexCoords", kVertexAttributeType_Float, 2, false, sizeof(float) }
 			})
 	{

@@ -18,45 +18,64 @@
 #define WIREFRAME false
 
 // Constants
-const glm::vec3 Up(0.0f, 0.0f, 1.0f);
+const glm::vec3 Up(0.0f, 1.0f, 0.0f);
 const glm::vec3 LookTarget(0.0f, 0.0f, 0.0f);
 const glm::vec3 EyePosition(10.0, 10.0f, 10.0f);
+
+Window *g_Window;
+unsigned int g_Width;
+unsigned int g_Height;
+
+GraphicsManager *g_GraphicsManager;
+ModelManager *g_ModelManager;
 
 // Program variables
 float g_LastTime;
 glm::mat4 g_ViewMatrix;
 glm::mat4 g_ProjectionMatrix;
-glm::mat4 g_ModelMatrix;
-glm::vec3 g_DirectionalLightDirection(0.0f);
-glm::vec3 g_DirectionalLightColor(1.0f, 0.0f, 0.0f);
-
-Window *g_Window;
-
-GraphicsManager *g_GraphicsManager;
-ModelManager *g_ModelManager;
 
 // App
 Shader *g_Shader;
 Model *g_Model;
+
+// Test
+bool g_DirectionalLightEnabled;
+glm::vec3 g_DirectionalLightDirection(0.0f);
+glm::vec3 g_DirectionalLightColor(1.0f, 0.0f, 0.0f);
+glm::mat4 g_EarthMatrix;
+glm::mat4 g_MoonMatrix;
+float g_MoonRotation = 0.0f;
 
 static void Update()
 {
 	const auto time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
 	const auto deltaTime = time - g_LastTime;
 
+	// Set earth matrix
+	g_EarthMatrix = glm::mat4(1.0f);
+	g_EarthMatrix = glm::scale(g_EarthMatrix, glm::vec3(1.5f));
+
+	// Set moon matrix
+	g_MoonRotation += deltaTime / 2.0f;
+	g_MoonMatrix = glm::mat4(1.0f);
+	g_MoonMatrix = glm::scale(g_MoonMatrix, glm::vec3(0.25f));
+	glm::vec3 moonPosition(cos(g_MoonRotation) * 25.0f, sin(g_MoonRotation) * 25.0f, 25.0f);
+	g_MoonMatrix = glm::translate(g_MoonMatrix, moonPosition);
+
 	// Use shader
 	g_Shader->Use();
 
-	// Transform updates
-	g_ModelMatrix = glm::mat4(1.0f);
-	g_ModelMatrix = glm::scale(g_ModelMatrix, glm::vec3(1.0f));
+	// Update view matrix and shit
+	g_ViewMatrix = glm::mat4(1.0f);
+	const auto aspectRatio = static_cast<float>(g_Width) / static_cast<float>(g_Height);
+	g_ProjectionMatrix = glm::ortho(-10.0f * aspectRatio, 10.0f * aspectRatio, -10.0f, 10.0f, -100.0f, 100.0f);
 
 	// Set view position
-	g_Shader->GetVariable("u_ViewPosition")->SetVec3(EyePosition);
+	g_Shader->GetVariable("u_ViewPosition")->SetVec3(EyePosition); // -- this should not matter in the slightest -- so why do we use it?
 
 	// Set directional light information
-	g_DirectionalLightDirection = glm::normalize(glm::vec3(sin(time) * 7.5f, cos(time) * 7.5f, 10.0f));
-	g_Shader->GetVariable("u_DirectionalLight.Enabled")->SetBool(true);
+	g_DirectionalLightDirection = glm::normalize(moonPosition);//glm::normalize(glm::vec3(sin(g_MoonRotation), cos(g_MoonRotation), 1.0f));
+	g_Shader->GetVariable("u_DirectionalLight.Enabled")->SetBool(g_DirectionalLightEnabled);
 	g_Shader->GetVariable("u_DirectionalLight.Direction")->SetVec3(g_DirectionalLightDirection);
 	g_Shader->GetVariable("u_DirectionalLight.Ambient")->SetVec3(g_DirectionalLightColor * 0.25f);
 	g_Shader->GetVariable("u_DirectionalLight.Diffuse")->SetVec3(g_DirectionalLightColor);
@@ -84,11 +103,15 @@ static void WindowRender()
 
 	// Update shader
 	g_Shader->Use();
-	g_Shader->GetVariable("u_Model")->SetMat4(g_ModelMatrix);
-	g_Shader->GetVariable("u_View")->SetMat4(g_ViewMatrix);
+	g_Shader->GetVariable("u_View")->SetMat4(g_ViewMatrix); // TODO/NOTE: These should automatically be set for any shader being used to render something
 	g_Shader->GetVariable("u_Projection")->SetMat4(g_ProjectionMatrix);
 
-	// Render
+	// Render Earth
+	g_Shader->GetVariable("u_Model")->SetMat4(g_EarthMatrix);
+	g_Model->Render(nullptr);
+
+	// Render Moon
+	g_Shader->GetVariable("u_Model")->SetMat4(g_MoonMatrix);
 	g_Model->Render(nullptr);
 
 	// Make the draw buffer to display buffer
@@ -106,6 +129,10 @@ static void WindowResize(ResizeEventArgs &args)
 
 	// If using perpsective projection, update projection matrix
 	glViewport(0, 0, args.Width, args.Height);
+
+	// Store values
+	g_Width = args.Width;
+	g_Height = args.Height;
 }
 
 static void WindowKeyDown(KeyEventArgs &args)
@@ -117,8 +144,17 @@ static void WindowKeyDown(KeyEventArgs &args)
 	}
 }
 
+static void WindowKeyPress(KeyPressEventArgs &args)
+{
+	if (args.Char == 'd')
+	{
+		// Toggle directional light
+		g_DirectionalLightEnabled = !g_DirectionalLightEnabled;
+	}
+}
+
 #ifdef DEBUG
-void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+static void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	const GLchar *message, const void *userParam)
 {
 	const char *sourceStr;
@@ -232,12 +268,13 @@ int main(int argc, char **argv)
 	g_Window->OnRender.Add(WindowRender);
 	g_Window->OnResize.Add(WindowResize);
 	g_Window->OnKeyDown.Add(WindowKeyDown);
+	g_Window->OnKeyPress.Add(WindowKeyPress);
 
 	// Initialize OpenGL
 	glewInit();
-	if (!GLEW_VERSION_3_0)
+	if (!GLEW_VERSION_3_1)
 	{
-		LOG_ERROR("Main", "OpenGL 3.0 not available");
+		LOG_ERROR("Main", "OpenGL 3.1 not available");
 
 		// No cleanup
 		return 1;
@@ -276,7 +313,7 @@ int main(int argc, char **argv)
 		g_ModelManager = New<ModelManager>("data/models", g_GraphicsManager);
 
 		// Load model
-		g_Model = g_ModelManager->GetModel("Cube");
+		g_Model = g_ModelManager->GetModel("Sphere");
 	}
 	catch (ShaderCompileException &ex)
 	{

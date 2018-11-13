@@ -51,7 +51,6 @@ uniform vec3 u_ViewPosition;
 
 // Input vars
 in vec3 Normal;
-in vec4 Color;
 in vec2 TexCoords;
 in vec3 WorldPos;
 
@@ -73,7 +72,7 @@ vec3 ProcessDirectionalLight(vec3 normal, vec3 viewDir)
 	if (!u_DirectionalLight.Enabled)
 		return vec3(0.0f);
 
-	vec3 lightDir = normalize(-u_DirectionalLight.Direction);
+	vec3 lightDir = -normalize(u_DirectionalLight.Direction);
 
 	// Diffuse shading
 	float d = max(dot(normal, lightDir), 0.0f);

@@ -1,0 +1,7 @@
+{
+	"name": "sphere",
+	"extension": "obj",
+  "materialMap": {
+    "Material.001": "Diffuse"
+  }
+}

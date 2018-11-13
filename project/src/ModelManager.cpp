@@ -37,15 +37,6 @@ Mesh *ModelManager::processMesh(Material *material, aiMesh *mesh, const aiScene 
 		v.Position.y = mesh->mVertices[i].y;
 		v.Position.z = mesh->mVertices[i].z;
 
-		// Color
-		if (mesh->HasVertexColors(i))
-		{
-			v.Color.r = mesh->mColors[i]->r;
-			v.Color.g = mesh->mColors[i]->g;
-			v.Color.b = mesh->mColors[i]->b;
-			v.Color.a = mesh->mColors[i]->a;
-		}
-
 		// Normal
 		if (mesh->HasNormals())
 		{

@@ -251,8 +251,11 @@ void Shader::Compile()
 		glGetActiveUniform(m_ID, static_cast<GLuint>(i), maxNameLength, &varNameLength, &size, &type, const_cast<char *>(varName.c_str()));
 		varName.resize(varNameLength);
 
+		// Get uniform location
+		const auto location = glGetUniformLocation(m_ID, varName.c_str());
+
 		// Store
-		m_Variables.push_back(New<ShaderVariable>(i, varName, static_cast<ShaderVariableType>(type)));
+		m_Variables.push_back(New<ShaderVariable>(location, varName, static_cast<ShaderVariableType>(type)));
 	}
 
 	// Set as compiled
