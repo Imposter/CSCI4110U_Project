@@ -10,7 +10,8 @@ project "Project"
 		"../dependencies/GLM",
 		"../dependencies/RapidJSON/include",
 		"../dependencies/STB",
-		"../dependencies/TinyOBJLoader",
+		"../dependencies/assimp/include",
+		"../dependencies/config",
 		"src",
 	}
 	
