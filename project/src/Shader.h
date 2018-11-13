@@ -4,64 +4,65 @@
 #include <string>
 #include <vector>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 // Exception definitions
 DEFINE_EXCEPTION(ShaderCompileException);
 DEFINE_EXCEPTION(ShaderLinkException);
 DEFINE_EXCEPTION(ShaderNotCompiledException);
 DEFINE_EXCEPTION(ShaderVariableNotFoundException);
+DEFINE_EXCEPTION(ShaderVariableTypeMismatchException);
+
+#define SHADER_DEFINE_VARIABLE(name) static const char *kShaderVar_ ## name =  "u_" #name
+
+enum ShaderVariableType
+{
+	kShaderVariableType_Unknown,
+
+	kShaderVariableType_Bool = GL_BOOL,
+
+	kShaderVariableType_Int = GL_INT,
+	kShaderVariableType_UInt = GL_UNSIGNED_INT,
+
+	kShaderVariableType_Float = GL_FLOAT,
+	kShaderVariableType_Double = GL_DOUBLE,
+
+	kShaderVariableType_Vec2 = GL_FLOAT_VEC2,
+	kShaderVariableType_Vec3 = GL_FLOAT_VEC3,
+	kShaderVariableType_Vec4 = GL_FLOAT_VEC4,
+
+	kShaderVariableType_Mat4 = GL_FLOAT_MAT4,
+
+	// Internal
+	kShaderVariableType_Sampler2D = GL_SAMPLER_2D,
+};
 
 class ShaderVariable
 {
 	GLuint m_ID;
 	std::string m_Name;
+	ShaderVariableType m_Type;
+	bool m_TypeCheck;
 
 public:
-	ShaderVariable(GLuint id, std::string name);
+	ShaderVariable(GLuint id, std::string name, ShaderVariableType type);
 
-	const GLuint &GetID() const;
+	GLuint GetID() const;
 	const std::string &GetName() const;
+	ShaderVariableType GetType() const;
 
-	// TODO: Make friendlier functions
-	void SetFloat1(float f1) const;
-	void SetFloat2(float f1, float f2) const;
-	void SetFloat3(float f1, float f2, float f3) const;
-	void SetFloat4(float f1, float f2, float f3, float f4) const;
+	bool IsTypeCheckEnabled() const;
+	void SetTypeCheck(bool enabled);
 
-	void SetInt1(int i1) const;
-	void SetInt2(int i1, int i2) const;
-	void SetInt3(int i1, int i2, int i3) const;
-	void SetInt4(int i1, int i2, int i3, int i4) const;
-
-	void SetUInt1(unsigned int i1) const;
-	void SetUInt2(unsigned int i1, unsigned int i2) const;
-	void SetUInt3(unsigned int i1, unsigned int i2, unsigned int i3) const;
-	void SetUInt4(unsigned int i1, unsigned int i2, unsigned int i3, unsigned int i4) const;
-
-	void SetVecFloat1(unsigned int count, const float *val) const;
-	void SetVecFloat2(unsigned int count, const float *val) const;
-	void SetVecFloat3(unsigned int count, const float *val) const;
-	void SetVecFloat4(unsigned int count, const float *val) const;
-
-	void SetVecInt1(unsigned int count, const int *val) const;
-	void SetVecInt2(unsigned int count, const int *val) const;
-	void SetVecInt3(unsigned int count, const int *val) const;
-	void SetVecInt4(unsigned int count, const int *val) const;
-
-	void SetVecUInt1(unsigned int count, const unsigned int *val) const;
-	void SetVecUInt2(unsigned int count, const unsigned int *val) const;
-	void SetVecUInt3(unsigned int count, const unsigned int *val) const;
-	void SetVecUInt4(unsigned int count, const unsigned int *val) const;
-
-	void SetVecMatrixFloat2(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat3(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat4(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat2x3(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat3x2(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat2x4(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat4x2(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat3x4(unsigned int count, bool transpose, const float *val) const;
-	void SetVecMatrixFloat4x3(unsigned int count, bool transpose, const float *val) const;
+	void SetBool(bool v);
+	void SetInt(int v);
+	void SetUInt(unsigned int v);
+	void SetFloat(float v);
+	void SetDouble(double v);
+	void SetVec2(const glm::vec2 &v);
+	void SetVec3(const glm::vec3 &v);
+	void SetVec4(const glm::vec4 &v);
+	void SetMat4(const glm::mat4 &m, bool transpose = false);
 };
 
 enum ShaderType
@@ -81,10 +82,10 @@ class Shader
 {
 	std::string m_Name;
 	std::vector<ShaderSource> m_Sources;
+	std::vector<ShaderVariable *> m_Variables;
 
 	GLuint m_ID;
 	bool m_Compiled;
-	std::vector<ShaderVariable *> m_Variables;
 
 	// Shader compilation
 	static GLuint compileShader(GLenum type, const void *source);
@@ -100,9 +101,9 @@ public:
 	Shader &operator=(const Shader &&) = delete;
 
 	const std::string &GetName() const;
-	const GLuint &GetID() const;
+	GLuint GetID() const;
 
-	ShaderVariable *GetVariable(const std::string &name) const;
+	ShaderVariable *GetVariable(const std::string &name);
 	std::vector<ShaderVariable *> GetVariables() const;
 
 	void Compile();

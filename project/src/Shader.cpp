@@ -1,13 +1,13 @@
-#include "Shader.h"
+﻿#include "Shader.h"
 #include "Memory.h"
 #include <utility>
 
-ShaderVariable::ShaderVariable(GLuint id, std::string name)
-	: m_ID(id), m_Name(std::move(name))
+ShaderVariable::ShaderVariable(GLuint id, std::string name, ShaderVariableType type)
+	: m_ID(id), m_Name(std::move(name)), m_Type(type), m_TypeCheck(true)
 {
 }
 
-const GLuint &ShaderVariable::GetID() const
+GLuint ShaderVariable::GetID() const
 {
 	return m_ID;
 }
@@ -17,169 +17,91 @@ const std::string &ShaderVariable::GetName() const
 	return m_Name;
 }
 
-void ShaderVariable::SetFloat1(float f1) const
+ShaderVariableType ShaderVariable::GetType() const
 {
-	glUniform1f(m_ID, f1);
+	return m_Type;
 }
 
-void ShaderVariable::SetFloat2(float f1, float f2) const
+bool ShaderVariable::IsTypeCheckEnabled() const
 {
-	glUniform2f(m_ID, f1, f2);
+	return m_TypeCheck;
 }
 
-void ShaderVariable::SetFloat3(float f1, float f2, float f3) const
+void ShaderVariable::SetTypeCheck(bool enabled)
 {
-	glUniform3f(m_ID, f1, f2, f3);
+	m_TypeCheck = enabled;
 }
 
-void ShaderVariable::SetFloat4(float f1, float f2, float f3, float f4) const
+void ShaderVariable::SetBool(bool v)
 {
-	glUniform4f(m_ID, f1, f2, f3, f4);
+	if (m_Type != kShaderVariableType_Bool)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform1i(m_ID, v);
 }
 
-void ShaderVariable::SetInt1(int i1) const
+void ShaderVariable::SetInt(int v)
 {
-	glUniform1i(m_ID, i1);
+	if (m_TypeCheck && m_Type != kShaderVariableType_Int)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform1i(m_ID, v);
 }
 
-void ShaderVariable::SetInt2(int i1, int i2) const
+void ShaderVariable::SetUInt(unsigned int v)
 {
-	glUniform2i(m_ID, i1, i2);
+	if (m_TypeCheck && m_Type != kShaderVariableType_UInt)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform1ui(m_ID, v);
 }
 
-void ShaderVariable::SetInt3(int i1, int i2, int i3) const
+void ShaderVariable::SetFloat(float v)
 {
-	glUniform3i(m_ID, i1, i2, i3);
+	if (m_TypeCheck && m_Type != kShaderVariableType_Float)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform1f(m_ID, v);
 }
 
-void ShaderVariable::SetInt4(int i1, int i2, int i3, int i4) const
+void ShaderVariable::SetDouble(double v)
 {
-	glUniform4i(m_ID, i1, i2, i3, i4);
+	if (m_TypeCheck && m_Type != kShaderVariableType_Double)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform1d(m_ID, v);
 }
 
-void ShaderVariable::SetUInt1(unsigned int i1) const
+void ShaderVariable::SetVec2(const glm::vec2 &v)
 {
-	glUniform1ui(m_ID, i1);
+	if (m_TypeCheck && m_Type != kShaderVariableType_Vec2)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform2fv(m_ID, 1, &v[0]);
 }
 
-void ShaderVariable::SetUInt2(unsigned int i1, unsigned int i2) const
+void ShaderVariable::SetVec3(const glm::vec3 &v)
 {
-	glUniform2ui(m_ID, i1, i2);
+	if (m_TypeCheck && m_Type != kShaderVariableType_Vec3)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform3fv(m_ID, 1, &v[0]);
 }
 
-void ShaderVariable::SetUInt3(unsigned int i1, unsigned int i2, unsigned int i3) const
+void ShaderVariable::SetVec4(const glm::vec4 &v)
 {
-	glUniform3ui(m_ID, i1, i2, i3);
+	if (m_TypeCheck && m_Type != kShaderVariableType_Vec4)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
+
+	glUniform4fv(m_ID, 1, &v[0]);
 }
 
-void ShaderVariable::SetUInt4(unsigned int i1, unsigned int i2, unsigned int i3, unsigned int i4) const
+void ShaderVariable::SetMat4(const glm::mat4 &v, bool transpose)
 {
-	glUniform4ui(m_ID, i1, i2, i3, i4);
-}
+	if (m_TypeCheck && m_Type != kShaderVariableType_Mat4)
+		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
 
-void ShaderVariable::SetVecFloat1(unsigned int count, const float *val) const
-{
-	glUniform1fv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecFloat2(unsigned int count, const float *val) const
-{
-	glUniform2fv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecFloat3(unsigned int count, const float *val) const
-{
-	glUniform3fv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecFloat4(unsigned int count, const float *val) const
-{
-	glUniform4fv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecInt1(unsigned int count, const int *val) const
-{
-	glUniform1iv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecInt2(unsigned int count, const int *val) const
-{
-	glUniform2iv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecInt3(unsigned int count, const int *val) const
-{
-	glUniform3iv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecInt4(unsigned int count, const int *val) const
-{
-	glUniform4iv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecUInt1(unsigned int count, const unsigned int *val) const
-{
-	glUniform1uiv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecUInt2(unsigned int count, const unsigned int *val) const
-{
-	glUniform2uiv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecUInt3(unsigned int count, const unsigned int *val) const
-{
-	glUniform3uiv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecUInt4(unsigned int count, const unsigned int *val) const
-{
-	glUniform4uiv(m_ID, count, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat2(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix2fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat3(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix3fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat4(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix4fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat2x3(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix2x3fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat3x2(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix3x2fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat2x4(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix2x4fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat4x2(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix4x2fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat3x4(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix3x4fv(m_ID, count, transpose, val);
-}
-
-void ShaderVariable::SetVecMatrixFloat4x3(unsigned int count, bool transpose, const float *val) const
-{
-	glUniformMatrix4x3fv(m_ID, count, transpose, val);
+	glUniformMatrix4fv(m_ID, 1, transpose, &v[0][0]);
 }
 
 GLuint Shader::compileShader(GLenum type, const void *source)
@@ -218,9 +140,9 @@ Shader::Shader(std::string name, std::vector<ShaderSource> sources)
 
 Shader::~Shader()
 {
-	for (auto &var : m_Variables)
-		Delete(var);
-
+	// Delete vars
+	for (auto &v : m_Variables)
+		Delete(v);
 	m_Variables.clear();
 
 	if (m_Compiled)
@@ -235,13 +157,14 @@ const std::string &Shader::GetName() const
 	return m_Name;
 }
 
-const GLuint &Shader::GetID() const
+GLuint Shader::GetID() const
 {
 	return m_ID;
 }
 
-ShaderVariable *Shader::GetVariable(const std::string &name) const
+ShaderVariable *Shader::GetVariable(const std::string &name)
 {
+	// Find variable
 	for (auto &var : m_Variables)
 	{
 		if (var->GetName() == name)
@@ -329,7 +252,7 @@ void Shader::Compile()
 		varName.resize(varNameLength);
 
 		// Store
-		m_Variables.push_back(New<ShaderVariable>(i, varName));
+		m_Variables.push_back(New<ShaderVariable>(i, varName, static_cast<ShaderVariableType>(type)));
 	}
 
 	// Set as compiled
