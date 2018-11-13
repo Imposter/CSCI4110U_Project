@@ -16,7 +16,7 @@ enum TextureFormat
 Texture *LoadTextureFromFile(const std::string &path, const std::string &name)
 {
 	// Read texture meta data
-	const auto metaLines = File::ReadAllLines(path + "/" + name + ".json");
+	const auto metaLines = File::ReadAllLines(path + "/" + name + "/meta.json");
 	const auto metaSource = String::Join(metaLines, "\n");
 
 	rapidjson::Document meta;

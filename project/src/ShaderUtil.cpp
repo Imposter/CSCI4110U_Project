@@ -6,7 +6,7 @@
 Shader *LoadShaderFromFile(const std::string &path, const std::string &name)
 {
 	// Read shader meta data
-	const auto metaLines = File::ReadAllLines(path + "/" + name + ".json");
+	const auto metaLines = File::ReadAllLines(path + "/" + name + "/meta.json");
 	const auto metaSource = String::Join(metaLines, "\n");
 
 	rapidjson::Document meta;
@@ -26,7 +26,7 @@ Shader *LoadShaderFromFile(const std::string &path, const std::string &name)
 		if (!shaderName.IsString())
 			THROW_EXCEPTION(InvalidShaderException, "Meta data invalid vertex shader");
 
-		const auto lines = File::ReadAllLines(path + "/" + shaderName.GetString() + "_vs.glsl");
+		const auto lines = File::ReadAllLines(path + "/" + shaderName.GetString() + "/" + shaderName.GetString() + "_vs.glsl");
 		sources.push_back({ shaderName.GetString(), kShaderType_Vertex, lines });
 	}
 
@@ -39,7 +39,7 @@ Shader *LoadShaderFromFile(const std::string &path, const std::string &name)
 		if (!shaderName.IsString())
 			THROW_EXCEPTION(InvalidShaderException, "Meta data invalid fragment shader");
 
-		const auto lines = File::ReadAllLines(path + "/" + shaderName.GetString() + "_fs.glsl");
+		const auto lines = File::ReadAllLines(path + "/" + shaderName.GetString() + "/" + shaderName.GetString() + "_fs.glsl");
 		sources.push_back({ shaderName.GetString(), kShaderType_Fragment, lines });
 	}
 
