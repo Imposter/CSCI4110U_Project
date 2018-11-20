@@ -87,11 +87,14 @@ vec3 ProcessDirectionalLight(vec3 normal, vec3 viewDir)
 	vec3 specular = vec3(0.0f);
 
 	if (!u_Material.TextureAmbientEnabled) ambient = u_DirectionalLight.Ambient * u_Material.Ambient;
-	else ambient = u_DirectionalLight.Ambient * texture(u_Material.TextureAmbient, TexCoords);
+	else ambient = u_DirectionalLight.Ambient * vec3(texture(u_Material.TextureAmbient, TexCoords));
 	if (!u_Material.TextureDiffuseEnabled) diffuse = u_DirectionalLight.Diffuse * d * u_Material.Diffuse;
-	else diffuse = u_DirectionalLight.Diffuse * d * texture(u_Material.TextureDiffuse, TexCoords);
+	else diffuse = u_DirectionalLight.Diffuse * d * vec3(texture(u_Material.TextureDiffuse, TexCoords));
 	if (!u_Material.TextureSpecularEnabled) specular = u_DirectionalLight.Specular * s * u_Material.Specular;
-	else specular = u_DirectionalLight.Specular * s * texture(u_Material.TextureSpecular, TexCoords);
+	else specular = u_DirectionalLight.Specular * s * vec3(texture(u_Material.TextureSpecular, TexCoords));
+
+	// dbg
+	specular = vec3(0.0f);
 
 	return (ambient + diffuse + specular) * u_DirectionalLight.Intensity;
 }
@@ -106,6 +109,12 @@ void main()
 	vec3 color = ProcessDirectionalLight(normal, viewDir);
 	for (int i = 0; i < POINT_LIGHTS_MAX; i++)
 		color += ProcessPointLight(i);
+
+	// test
+	if (!u_DirectionalLight.Enabled)
+	{
+		color = vec3(1.0f, 0.0f, 0.0f);
+	}
 
 	// Set color
 	FragColor = vec4(color, 1.0f);
