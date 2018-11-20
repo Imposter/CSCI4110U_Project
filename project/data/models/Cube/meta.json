@@ -1,7 +1,0 @@
-{
-	"name": "cube",
-	"extension": "obj",
-	"materialMap": {
-		"Material": "Diffuse"
-	}
-}

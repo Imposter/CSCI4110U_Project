@@ -1,17 +1,25 @@
 #pragma once
 
 #include "Object.h"
+#include "Shader.h"
+#include "Utility/Exception.h"
 #include <glm/glm.hpp>
 #include <vector>
-#include "GraphicsManager.h"
 
 #ifndef LIGHTS_MAX
 #define LIGHTS_MAX 255
 #endif
 
+DEFINE_EXCEPTION(LightNotFoundException);
+
+// TODO: LightDefineVar? -- kind of like in Material?
+
+// TODO: GetVar function, typeName so we can just Shader->GetVar("u_Lights[type][index].prop")
 class ILight : public Object
 {
 protected:
+	unsigned int m_Type;
+
 	// IsActive is used for enabled
 	glm::vec3 m_Direction;
 	float m_Intensity;
@@ -22,7 +30,7 @@ protected:
 	glm::vec3 m_Specular;
 
 public:
-	ILight();
+	ILight(std::string name, unsigned int type, Object *parent = nullptr);
 
 	// No copying/moving
 	ILight(const ILight &) = delete;
@@ -31,7 +39,8 @@ public:
 	ILight(const ILight &&) = delete;
 	ILight &operator=(const ILight &&) = delete;
 
-	// ...
+	unsigned int GetType() const;
+
 	const glm::vec3 &GetDirection() const;
 	void SetDirection(const glm::vec3 &direction);
 
@@ -46,19 +55,16 @@ public:
 
 	const glm::vec3 &GetSpecular() const;
 	void SetSpecular(const glm::vec3 &specular);
+
+	virtual void Apply(Shader *shader, unsigned int index) = 0;
 };
 
-// TODO: Define block types (however we cannot abstract or we will run into issues with alignment
-// TODO: Therefore we must split lights into directional, points, spots
-
+// Not thread safe
 class LightManager
 {
-	GraphicsManager *m_GraphicsManager; // We might not even need this
 	std::vector<ILight *> m_Lights;
 	
 public:
-	// ...
-	LightManager(GraphicsManager *graphicsManager);
 	~LightManager();
 
 	// No copying/moving
@@ -68,15 +74,40 @@ public:
 	LightManager(const LightManager &&) = delete;
 	LightManager &operator=(const LightManager &&) = delete;
 
-	// TODO: Update();
-	// TODO: ApplyTo(Shader *);
+	void Apply(Shader *shader);
 
-	// TODO/NOTE: We shouldn't need this
 	template<class TLight, typename... TArgs>
 	TLight *CreateLight(TArgs... args)
 	{
-		const auto light = New<TLight, TArgs...>(args...);
+		// Create light
+		ILight *light = New<TLight, TArgs...>(args...);
+
+		// Store light
 		m_Lights.push_back(light);
+
 		return light;
 	}
+
+	void RemoveLight(ILight *light)
+	{
+		// Check if light exists
+		for (auto it = m_Lights.begin(); it != m_Lights.end();)
+		{
+			if (*it == light)
+			{
+				m_Lights.erase(it);
+
+				// Free memory
+				Delete(light);
+
+				return;
+			}
+
+			++it;
+		}
+
+		THROW_EXCEPTION(LightNotFoundException, "Light does not exist");
+	}
+
+	// TODO/NOTE: GetLight functions?
 };

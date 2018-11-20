@@ -1,8 +1,0 @@
-{
-	"name": "earth2",
-	"extension": "obj",
-	"materialMap": {
-		"01___Default": "Diffuse",
-		"02___Default": "Diffuse"
-	}
-}

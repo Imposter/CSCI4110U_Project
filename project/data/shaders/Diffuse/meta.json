@@ -1,9 +1,0 @@
-{
-	"name": "Diffuse",
-	"vertex": [
-		"Diffuse"
-	],
-	"fragment": [
-		"Diffuse"
-	]
-}

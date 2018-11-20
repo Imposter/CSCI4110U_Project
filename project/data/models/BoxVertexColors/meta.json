@@ -1,7 +1,0 @@
-{
-	"name": "BoxVertexColors",
-	"extension": "gltf",
-	"materialMap": {
-		"Default": "Diffuse"
-	}
-}

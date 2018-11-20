@@ -83,7 +83,7 @@ public:
 	void Render(RenderContext *context) override
 	{
 		// Apply material
-		if (m_Material)	m_Material->Apply(); // TODO/NOTE: What can RenderContext be used for?
+		if (m_Material)	m_Material->Apply(); // TODO/NOTE: What can RenderContext be used for? Remove?
 
 		// Bind vertex array
 		m_VertexArray->Bind();

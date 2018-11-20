@@ -1,8 +1,14 @@
 #include "LightManager.h"
+#include <map>
 
-ILight::ILight()
-	: m_Direction(0.0f), m_Intensity(0.0f), m_Ambient(0.0f), m_Diffuse(0.0f), m_Specular(0.0f)
+ILight::ILight(std::string name, unsigned int type, Object *parent)
+	: Object(name, parent), m_Type(type), m_Direction(0.0f), m_Intensity(0.0f), m_Ambient(0.0f), m_Diffuse(0.0f), m_Specular(0.0f)
 {
+}
+
+unsigned int ILight::GetType() const
+{
+	return m_Type;
 }
 
 const glm::vec3 &ILight::GetDirection() const
@@ -55,18 +61,32 @@ void ILight::SetSpecular(const glm::vec3 &specular)
 	m_Specular = specular;
 }
 
-// GraphicsManager::GetActiveShader?
-
-// Or take a shader? -- todo: find out
-LightManager::LightManager(GraphicsManager *graphicsManager)
-	: m_GraphicsManager(graphicsManager)
-{
-	// TODO: Setup lights for shaders?
-} // TODO: UniformBuffer class based on Buffer?
-
 LightManager::~LightManager()
 {
 	for (const auto &l : m_Lights)
 		Delete(l);
 	m_Lights.clear();
+}
+
+void LightManager::Apply(Shader *shader)
+{
+	std::map<unsigned int, unsigned int> typeCount;
+
+	for (const auto &l : m_Lights)
+	{
+		// Ignore inactive lights
+		if (!l->IsActive())
+			continue;
+
+		// Increase index of active light
+		const auto idx = typeCount[l->GetType()];
+		++typeCount[l->GetType()];
+
+		// Apply light to shader
+		l->Apply(shader, idx);
+	}
+
+	// Store counts in shader
+	for (const auto &p : typeCount)
+		shader->GetVariable(String::Format("u_LightCount[%u]", p.first))->SetUInt(p.second); // TODO: Can we make this neater any way?
 }
