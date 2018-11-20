@@ -39,9 +39,9 @@ Shader *g_Shader;
 Model *g_Model;
 
 // Test
-bool g_DirectionalLightEnabled;
+bool g_DirectionalLightEnabled; // TODO: Make light classes and start on this
 glm::vec3 g_DirectionalLightDirection(0.0f);
-glm::vec3 g_DirectionalLightColor(1.0f, 0.0f, 0.0f);
+glm::vec3 g_DirectionalLightColor(0.80f, 0.80f, 0.80f);
 glm::mat4 g_EarthMatrix;
 glm::mat4 g_MoonMatrix;
 float g_MoonRotation = 0.0f;
@@ -53,17 +53,19 @@ static void Update()
 
 	// Set earth matrix
 	g_EarthMatrix = glm::mat4(1.0f);
-	g_EarthMatrix = glm::scale(g_EarthMatrix, glm::vec3(1.5f));
+	g_EarthMatrix = glm::scale(g_EarthMatrix, glm::vec3(0.005f));//glm::vec3(1.5f));
 
 	// Set moon matrix
 	g_MoonRotation += deltaTime / 2.0f;
 	g_MoonMatrix = glm::mat4(1.0f);
-	g_MoonMatrix = glm::scale(g_MoonMatrix, glm::vec3(0.25f));
-	glm::vec3 moonPosition(cos(g_MoonRotation) * 25.0f, sin(g_MoonRotation) * 25.0f, 25.0f);
+	g_MoonMatrix = glm::scale(g_MoonMatrix, glm::vec3(0.0001f));//glm::vec3(0.25f));
+	glm::vec3 moonPosition(cos(g_MoonRotation) * 2.0f, sin(g_MoonRotation) * 2.0f, 2.0f);
 	g_MoonMatrix = glm::translate(g_MoonMatrix, moonPosition);
 
 	// Use shader
 	g_Shader->Use();
+
+	// Great site to learn from (avoid Cg): https://www.3dgep.com/texturing-and-lighting-with-opengl-and-glsl/
 
 	// Update view matrix and shit
 	g_ViewMatrix = glm::mat4(1.0f);
@@ -74,7 +76,7 @@ static void Update()
 	g_Shader->GetVariable("u_ViewPosition")->SetVec3(EyePosition); // -- this should not matter in the slightest -- so why do we use it?
 
 	// Set directional light information
-	g_DirectionalLightDirection = glm::normalize(moonPosition);//glm::normalize(glm::vec3(sin(g_MoonRotation), cos(g_MoonRotation), 1.0f));
+	g_DirectionalLightDirection = glm::normalize(moonPosition);
 	g_Shader->GetVariable("u_DirectionalLight.Enabled")->SetBool(g_DirectionalLightEnabled);
 	g_Shader->GetVariable("u_DirectionalLight.Direction")->SetVec3(g_DirectionalLightDirection);
 	g_Shader->GetVariable("u_DirectionalLight.Ambient")->SetVec3(g_DirectionalLightColor * 0.25f);
@@ -313,7 +315,7 @@ int main(int argc, char **argv)
 		g_ModelManager = New<ModelManager>("data/models", g_GraphicsManager);
 
 		// Load model
-		g_Model = g_ModelManager->GetModel("Sphere");
+		g_Model = g_ModelManager->GetModel("earth");
 	}
 	catch (ShaderCompileException &ex)
 	{

@@ -37,7 +37,7 @@ Texture *LoadTextureFromFile(const std::string &path, const std::string &name)
 		THROW_EXCEPTION(InvalidTextureException, "Meta data invalid format");
 
 	// Build path
-	const auto filePath = path + "/" + meta["name"].GetString() + "." + meta["extension"].GetString();
+	const auto filePath = path + "/" + name + "/" + meta["name"].GetString() + "." + meta["extension"].GetString();
 
 	// Determine format
 	Texture::Format format;
@@ -63,6 +63,7 @@ Texture *LoadTextureFromFile(const std::string &path, const std::string &name)
 
 	int width, height, channels;
 	const auto data = stbi_load(filePath.c_str(), &width, &height, &channels, 0);
+	if (!data) THROW_EXCEPTION(InvalidTextureException, "Unable to load texture");
 	const auto texture = New<Texture>(width, height, format, data);
 
 	stbi_image_free(data);

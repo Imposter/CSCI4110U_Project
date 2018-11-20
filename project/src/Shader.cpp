@@ -1,6 +1,7 @@
 ﻿#include "Shader.h"
 #include "Memory.h"
 #include <utility>
+#include <glm/gtc/type_ptr.hpp>
 
 ShaderVariable::ShaderVariable(GLuint id, std::string name, ShaderVariableType type)
 	: m_ID(id), m_Name(std::move(name)), m_Type(type), m_TypeCheck(true)
@@ -77,7 +78,7 @@ void ShaderVariable::SetVec2(const glm::vec2 &v)
 	if (m_TypeCheck && m_Type != kShaderVariableType_Vec2)
 		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
 
-	glUniform2fv(m_ID, 1, &v[0]);
+	glUniform2fv(m_ID, 1, glm::value_ptr(v));
 }
 
 void ShaderVariable::SetVec3(const glm::vec3 &v)
@@ -85,7 +86,7 @@ void ShaderVariable::SetVec3(const glm::vec3 &v)
 	if (m_TypeCheck && m_Type != kShaderVariableType_Vec3)
 		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
 
-	glUniform3fv(m_ID, 1, &v[0]);
+	glUniform3fv(m_ID, 1, glm::value_ptr(v));
 }
 
 void ShaderVariable::SetVec4(const glm::vec4 &v)
@@ -93,7 +94,7 @@ void ShaderVariable::SetVec4(const glm::vec4 &v)
 	if (m_TypeCheck && m_Type != kShaderVariableType_Vec4)
 		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
 
-	glUniform4fv(m_ID, 1, &v[0]);
+	glUniform4fv(m_ID, 1, glm::value_ptr(v));
 }
 
 void ShaderVariable::SetMat4(const glm::mat4 &v, bool transpose)
@@ -101,7 +102,7 @@ void ShaderVariable::SetMat4(const glm::mat4 &v, bool transpose)
 	if (m_TypeCheck && m_Type != kShaderVariableType_Mat4)
 		THROW_EXCEPTION(ShaderVariableTypeMismatchException, "Expected type %d", m_Type);
 
-	glUniformMatrix4fv(m_ID, 1, transpose, &v[0][0]);
+	glUniformMatrix4fv(m_ID, 1, transpose, glm::value_ptr(v));
 }
 
 GLuint Shader::compileShader(GLenum type, const void *source)

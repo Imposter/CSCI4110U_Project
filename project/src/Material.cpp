@@ -225,7 +225,7 @@ unsigned int Material::GetTextureSlot(const std::string &name) const
 unsigned int Material::SetTexture(const std::string &name, Texture *texture)
 {
 	// Check if texture with name is already present
-	for (auto &res : m_Resources)
+	for (auto &res : m_Resources) // TODO: This should take parameters without "u_Material.*" in them and correct them...
 	{
 		if (res->GetName() == name)
 		{
@@ -283,6 +283,10 @@ void Material::Apply()
 		const auto var = m_Shader->GetVariable(res->GetName());
 
 		texture->Activate(slot);
+
+		// Set slot
+		var->SetTypeCheck(false);
 		var->SetInt(slot);
+		var->SetTypeCheck(true);
 	}
 }

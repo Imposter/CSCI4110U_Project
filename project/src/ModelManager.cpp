@@ -6,18 +6,17 @@
 void ModelManager::loadTexture(Material *material, const std::string &path, const std::string &key, const std::string &enableKey)
 {
 	// Load texture
-	const auto name = path.substr(path.find_last_of('/') + 1);
+	auto name = path.substr(path.find_last_of('/') + 1);
+	name = name.substr(0, name.find_last_of('.'));
 	const auto texture = m_GraphicsManager->GetTexture(name);
 
 	// Set material texture
-	const auto slot = material->SetTexture(key.substr(key.find_last_of('.') + 1), texture);
-	auto v = material->GetVariable(key);
-	v->SetInt(slot);
-
+	material->SetTexture(key, texture);
+	
 	// Set material to use texture
 	if (!enableKey.empty())
 	{
-		v = material->GetVariable(enableKey);
+		const auto v = material->GetVariable(enableKey);
 		v->SetBool(true);
 	}
 }
@@ -145,20 +144,14 @@ Material *ModelManager::processMaterial(std::map<std::string, std::string> &mate
 	// Textures (NOTE: only one per property is supported)
 	{
 		aiString path;
-		aiTextureMapping mapping;
-		unsigned int uvIndex;
-		float blend;
-		aiTextureOp op;
-		aiTextureMapMode mapMode;
-
 		if (material->GetTextureCount(aiTextureType_AMBIENT))
-			if (material->GetTexture(aiTextureType_AMBIENT, 0, &path, &mapping, &uvIndex, &blend, &op, &mapMode) == AI_SUCCESS)
+			if (material->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS)
 				loadTexture(m, path.C_Str(), kMaterialVar_TextureAmbient, kMaterialVar_TextureAmbientEnabled);
 		if (material->GetTextureCount(aiTextureType_DIFFUSE))
-			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path, &mapping, &uvIndex, &blend, &op, &mapMode) == AI_SUCCESS)
+			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
 				loadTexture(m, path.C_Str(), kMaterialVar_TextureDiffuse, kMaterialVar_TextureDiffuseEnabled);
 		if (material->GetTextureCount(aiTextureType_SPECULAR))
-			if (material->GetTexture(aiTextureType_SPECULAR, 0, &path, &mapping, &uvIndex, &blend, &op, &mapMode) == AI_SUCCESS)
+			if (material->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS)
 				loadTexture(m, path.C_Str(), kMaterialVar_TextureSpecular, kMaterialVar_TextureSpecularEnabled);
 	}
 
@@ -190,7 +183,7 @@ void ModelManager::processScene(const aiScene *scene, std::map<std::string, std:
 	processNode(materials, meshes, scene->mRootNode, scene);
 }
 
-// TODO/Preferrably rewrite loading/materials for better support
+// TODO: Preferrably rewrite loading/materials for better support -- (multiple material support!)
 Model *ModelManager::loadFromFile(const std::string &name)
 {
 	// Read texture meta data

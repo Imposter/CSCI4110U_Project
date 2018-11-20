@@ -74,14 +74,16 @@ void Object::Update(float deltaTime)
 {
 	// Update all children
 	for (auto &obj : m_Children)
-		obj->Update(deltaTime);
+		if (obj->m_IsActive)
+			obj->Update(deltaTime);
 }
 
 void Object::Render(float deltaTime)
 {
 	// Render all children
 	for (auto &obj : m_Children)
-		obj->Render(deltaTime);
+		if (obj->m_IsActive)
+			obj->Render(deltaTime);
 }
 
 void Object::Shutdown()

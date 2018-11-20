@@ -18,6 +18,28 @@ Model::~Model()
 	m_Materials.clear();
 }
 
+Mesh *Model::GetMesh(const std::string &name) const
+{
+	for (auto &m : m_Meshes)
+	{
+		if (m->GetName() == name)
+			return m;
+	}
+
+	THROW_EXCEPTION(MeshNotFoundException, "Mesh %s not found", name.c_str());
+}
+
+Material *Model::GetMaterial(const std::string &name) const
+{
+	for (auto &m : m_Materials)
+	{
+		if (m->GetName() == name)
+			return m;
+	}
+
+	THROW_EXCEPTION(MaterialNotFoundException, "Material %s not found", name.c_str());
+}
+
 void Model::Compile()
 {
 	for (auto &m : m_Meshes)

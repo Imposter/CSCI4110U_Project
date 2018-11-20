@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Utility/Exception.h"
-#include <cstdint>
 #include <GL/glew.h>
 
 DEFINE_EXCEPTION(BufferMapException);
@@ -18,9 +17,21 @@ public:
 		kTarget_ElementArrayBuffer = GL_ELEMENT_ARRAY_BUFFER,
 		kTarget_QueryBuffer = GL_QUERY_BUFFER,
 		kTarget_TextureBuffer = GL_TEXTURE_BUFFER,
+		kTarget_UniformBuffer = GL_UNIFORM_BUFFER,
 
 		kTarget_CopyReadBuffer = GL_COPY_READ_BUFFER,
 		kTarget_CopyWriteBuffer = GL_COPY_WRITE_BUFFER,
+	};
+
+	enum Usage
+	{
+		kUsage_StaticDraw = GL_STATIC_DRAW,
+		kUsage_StaticRead = GL_STATIC_READ,
+		kUsage_StaticCopy = GL_STATIC_COPY,
+
+		kUsage_DynamicDraw = GL_DYNAMIC_DRAW,
+		kUsage_DynamicRead = GL_DYNAMIC_READ,
+		kUsage_DynamicCopy = GL_DYNAMIC_COPY,
 	};
 
 	enum Access
@@ -35,8 +46,8 @@ public:
 protected:
 	GLuint m_ID;
 	Target m_Target;
+	Usage m_Usage;
 	size_t m_Size;
-	bool m_Dynamic;
 
 	bool m_Mapped;
 	Access m_MappedAccess;
@@ -45,7 +56,7 @@ private:
 	void init(const void *data = nullptr);
 
 public:
-	Buffer(Target target, size_t size, const void *data = nullptr, bool dynamic = false);
+	Buffer(Target target, Usage usage, size_t size, const void *data = nullptr);
 	~Buffer();
 
 	Buffer(const Buffer &copy);
@@ -69,7 +80,7 @@ public:
 	template<typename TObject>
 	const TObject *Map(unsigned int index, unsigned int count, Access access = kAccess_ReadWrite)
 	{
-		return (TObject *)Map(index * sizeof(TObject), count * sizeof(TObject), access);
+		return reinterpret_cast<TObject *>(Map(index * sizeof(TObject), count * sizeof(TObject), access));
 	}
 
 	template<typename TObject>

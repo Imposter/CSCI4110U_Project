@@ -2,7 +2,7 @@
 
 Texture::Texture(unsigned int width, unsigned int height, Format format, const void *data)
 	: m_ID(0), m_Width(width), m_Height(height), m_Format(format), m_WrapModeS(kWrapMode_Repeat), m_WrapModeT(kWrapMode_Repeat), 
-	m_FilterModeMin(kFilterMode_NearestMipmapLinear), m_FilterModeMag(kFilterMode_Linear)
+	m_FilterModeMin(kFilterMode_LinearMipmapLinear), m_FilterModeMag(kFilterMode_Linear)
 {
 	// TODO: Use buffers for this
 	// Generate texture buffer
@@ -17,6 +17,8 @@ Texture::Texture(unsigned int width, unsigned int height, Format format, const v
 
 	// Create texture
 	glTexImage2D(GL_TEXTURE_2D, 0, kFormat_RGBA8, width, height, 0, m_Format, GL_UNSIGNED_BYTE, data);
+
+	// TODO: Add a parameter for this, and the ability to specify if mipmapped in texture metadata
 	glGenerateMipmap(GL_TEXTURE_2D);
 }
 

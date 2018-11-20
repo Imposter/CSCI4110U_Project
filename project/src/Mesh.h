@@ -28,6 +28,7 @@ public:
 	}
 };
 
+// TODO: Add ability to change material for meshes
 template<typename TVertex, typename TVertexFormat>
 class IMesh : public Node
 {
@@ -58,6 +59,21 @@ public:
 	IMesh(const IMesh &&) = delete;
 	IMesh &operator=(const IMesh &&) = delete;
 
+	Material *GetMaterial() const
+	{
+		return m_Material;
+	}
+
+	// TODO: Implement?
+	// Use with caution! Memory here is unmanaged
+	// we need a way to store the material in the 
+	// model so it is destroyed automatically on 
+	// shutdown
+	/*void SetMaterial(Material *material)
+	{
+		m_Material = material;
+	}*/
+
 	void Compile() override
 	{
 		// Call compile for all children
@@ -67,7 +83,7 @@ public:
 	void Render(RenderContext *context) override
 	{
 		// Apply material
-		if (m_Material)	m_Material->Apply(); // TODO/NOTE: Why do we need render context here? We have our materials...
+		if (m_Material)	m_Material->Apply(); // TODO/NOTE: What can RenderContext be used for?
 
 		// Bind vertex array
 		m_VertexArray->Bind();

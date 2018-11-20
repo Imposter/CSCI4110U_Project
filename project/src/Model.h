@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Mesh.h"
+#include "Utility/Exception.h"
+
+DEFINE_EXCEPTION(MeshNotFoundException);
+DEFINE_EXCEPTION(MaterialNotFoundException);
 
 class Model
 {
@@ -18,6 +22,11 @@ public:
 
 	Model(const Model &&) = delete;
 	Model &operator=(const Model &&) = delete;
+
+	// TODO: Create new managed material? -- load all possible materials?
+
+	Mesh *GetMesh(const std::string &name) const;
+	Material *GetMaterial(const std::string &name) const;
 
 	void Compile();
 	void Render(RenderContext *context);

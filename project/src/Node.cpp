@@ -5,6 +5,11 @@ Node::Node(std::string name, Node *parent)
 {
 }
 
+const std::string &Node::GetName() const
+{
+	return m_Name;
+}
+
 Node *Node::GetParent() const
 {
 	return m_Parent;

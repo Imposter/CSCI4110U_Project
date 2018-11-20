@@ -9,11 +9,11 @@ void Buffer::init(const void *data)
 	glBindBuffer(m_Target, m_ID);
 
 	// Create buffer with no data
-	glBufferData(m_Target, m_Size, data, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	glBufferData(m_Target, m_Size, data, m_Usage);
 }
 
-Buffer::Buffer(Target target, size_t size, const void *data, bool dynamic)
-	: m_ID(0), m_Target(target), m_Size(size), m_Dynamic(dynamic), m_Mapped(false), m_MappedAccess(kAccess_None)
+Buffer::Buffer(Target target, Usage usage, size_t size, const void *data)
+	: m_ID(0), m_Target(target), m_Usage(usage), m_Size(size), m_Mapped(false), m_MappedAccess(kAccess_None)
 {
 	init(data);
 }
@@ -24,7 +24,7 @@ Buffer::~Buffer()
 }
 
 Buffer::Buffer(const Buffer &copy)
-	: m_ID(0), m_Target(copy.m_Target), m_Size(copy.m_Size), m_Dynamic(copy.m_Dynamic), m_Mapped(false), m_MappedAccess(kAccess_None)
+	: m_ID(0), m_Target(copy.m_Target), m_Usage(copy.m_Usage), m_Size(copy.m_Size), m_Mapped(false), m_MappedAccess(kAccess_None)
 {
 	// Init
 	init();
@@ -62,7 +62,7 @@ size_t Buffer::GetSize() const
 void Buffer::SetSize(size_t size)
 {
 	// Create a new buffer
-	Buffer tempBuffer(m_Target, size, nullptr, m_Dynamic);
+	Buffer tempBuffer(m_Target, m_Usage, size, nullptr);
 
 	// Copy current buffer
 	tempBuffer.Copy(*this);
@@ -89,7 +89,7 @@ void Buffer::Copy(const Buffer &buffer)
 	
 	// Resize this buffer (if needed)
 	if (m_Size != buffer.m_Size)
-		glBufferData(GL_COPY_WRITE_BUFFER, buffer.m_Size, nullptr, m_Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+		glBufferData(GL_COPY_WRITE_BUFFER, buffer.m_Size, nullptr, m_Usage);
 
 	// Copy to this buffer
 	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, buffer.m_Size);

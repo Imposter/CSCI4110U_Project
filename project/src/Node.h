@@ -22,6 +22,7 @@ class Node
 public:
 	Node(std::string name = "Node", Node *parent = nullptr);
 
+	const std::string &GetName() const;
 	Node *GetParent() const;
 
 	void AddChild(Node *node);

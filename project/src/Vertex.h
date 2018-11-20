@@ -69,21 +69,20 @@ class VertexBuffer : public Buffer
 
 public:
 	VertexBuffer(VertexArray *vertexArray, unsigned int count)
-		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count), m_Array(vertexArray), m_Count(count)
+		: Buffer(kTarget_ArrayBuffer, kUsage_DynamicDraw, sizeof(TVertex) * count), m_Array(vertexArray), m_Count(count)
 	{
 	}
 
 	VertexBuffer(VertexArray *vertexArray, const void *data, unsigned int count)
-		: Buffer(kTarget_ArrayBuffer, sizeof(TVertex) * count, data), m_Array(vertexArray), m_Count(count)
+		: Buffer(kTarget_ArrayBuffer, kUsage_DynamicDraw, sizeof(TVertex) * count, data), m_Array(vertexArray), m_Count(count)
 	{
 	}
 
 	~VertexBuffer() = default;
 
 	VertexBuffer(const VertexBuffer &copy)
-		: Buffer(copy.m_Target, copy.m_Size, nullptr, copy.m_Dynamic), m_Array(copy.m_Array), m_Count(copy.m_Count)
+		: Buffer(copy), m_Array(copy.m_Array), m_Count(copy.m_Count)
 	{
-		Copy(copy);
 	}
 
 	VertexBuffer &operator=(const VertexBuffer &copy)
@@ -127,21 +126,20 @@ class IndexBuffer : public Buffer
 
 public:
 	IndexBuffer(unsigned int count)
-		: Buffer(kTarget_ElementArrayBuffer, sizeof(unsigned int) * count), m_Count(count)
+		: Buffer(kTarget_ElementArrayBuffer, kUsage_DynamicDraw, sizeof(unsigned int) * count), m_Count(count)
 	{
 	}
 
 	IndexBuffer(const void *data, unsigned int count)
-		: Buffer(kTarget_ElementArrayBuffer, sizeof(unsigned int) * count, data), m_Count(count)
+		: Buffer(kTarget_ElementArrayBuffer, kUsage_DynamicDraw, sizeof(unsigned int) * count, data), m_Count(count)
 	{
 	}
 
 	~IndexBuffer() = default;
 
 	IndexBuffer(const IndexBuffer &copy)
-		: Buffer(copy.m_Target, copy.m_Size, nullptr, copy.m_Dynamic), m_Count(copy.m_Count)
+		: Buffer(copy), m_Count(copy.m_Count)
 	{
-		Copy(copy);
 	}
 
 	IndexBuffer &operator=(const IndexBuffer &copy)
