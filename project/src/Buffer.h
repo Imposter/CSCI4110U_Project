@@ -80,7 +80,7 @@ public:
 	template<typename TObject>
 	const TObject *Map(unsigned int index, unsigned int count, Access access = kAccess_ReadWrite)
 	{
-		return reinterpret_cast<TObject *>(Map(index * sizeof(TObject), count * sizeof(TObject), access));
+		return (TObject *)Map(index * sizeof(TObject), count * sizeof(TObject), access);
 	}
 
 	template<typename TObject>

@@ -274,9 +274,11 @@ int main(int argc, char **argv)
 
 	// Initialize OpenGL
 	glewInit();
-	if (!GLEW_VERSION_3_1)
+
+	// Check for minimum supported API
+	if (!GLEW_VERSION_4_1)
 	{
-		LOG_ERROR("Main", "OpenGL 3.1 not available");
+		LOG_ERROR("Main", "OpenGL 4.1 not available");
 
 		// No cleanup
 		return 1;
