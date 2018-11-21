@@ -21,7 +21,7 @@ void *MemoryAllocate(const std::string &name, size_t hash, uint64_t size);
 void MemoryFree(void *ptr);
 
 template<typename T>
-static T *MemoryAllocate(const std::string &name, size_t hash, uint64_t count = 1)
+static T *MemoryAllocate(const std::string &name, size_t hash, size_t count = 1)
 {
 	return static_cast<T *>(MemoryAllocate(name, hash, sizeof(T) * count));
 }

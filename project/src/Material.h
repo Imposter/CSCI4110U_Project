@@ -2,7 +2,7 @@
 
 #include "Texture.h"
 #include "Shader.h"
-#include "Value.h"
+#include "GraphicsManager.h"
 
 DEFINE_EXCEPTION(MaterialVariableNotFoundException);
 DEFINE_EXCEPTION(MaterialTextureNotFoundException);
@@ -79,6 +79,7 @@ class Material
 {
 	std::string m_Name;
 	Shader *m_Shader;
+	GraphicsManager *m_GraphicsManager;
 	std::vector<MaterialVariable *> m_Variables;
 	std::vector<MaterialResource *> m_Resources;
 

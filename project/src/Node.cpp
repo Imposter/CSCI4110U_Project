@@ -1,7 +1,8 @@
 #include "Node.h"
+#include <utility>
 
 Node::Node(std::string name, Node *parent)
-	: m_Name(name), m_Parent(parent)
+	: m_Name(std::move(name)), m_Parent(parent), m_IsActive(true)
 {
 }
 
@@ -21,6 +22,7 @@ void Node::AddChild(Node *node)
 		node->m_Parent->RemoveChild(node);
 
 	node->m_Parent = this;
+	node->m_Transform.SetParent(&m_Transform);
 	m_Children.push_back(node);
 }
 
@@ -40,6 +42,22 @@ void Node::RemoveChild(Node *node)
 	}
 
 	node->m_Parent = nullptr;
+	node->m_Transform.SetParent(nullptr);
+}
+
+Transform *Node::GetTransform()
+{
+	return &m_Transform;
+}
+
+bool Node::IsActive() const
+{
+	return m_IsActive;
+}
+
+void Node::SetActive(bool active)
+{
+	m_IsActive = active;
 }
 
 Node::~Node()
@@ -62,5 +80,6 @@ void Node::Compile()
 void Node::Render(RenderContext *context)
 {
 	for (auto &node : m_Children)
-		node->Render(context);
+		if (node->m_IsActive)
+			node->Render(context);
 }

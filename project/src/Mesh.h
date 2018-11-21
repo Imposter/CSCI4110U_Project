@@ -83,7 +83,7 @@ public:
 	void Render(RenderContext *context) override
 	{
 		// Apply material
-		if (m_Material)	m_Material->Apply(); // TODO/NOTE: What can RenderContext be used for? Remove?
+		if (m_Material)	m_Material->Apply();
 
 		// Bind vertex array
 		m_VertexArray->Bind();
@@ -91,7 +91,8 @@ public:
 		m_IndexBuffer.Bind();
 
 		// Render
-		glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr); // TODO: Move these to graphics manager, along with buffers, etc.
+		// TODO: create buffers through buffermanager
 
 		// Call render for all children
 		Node::Render(context);

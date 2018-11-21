@@ -41,19 +41,27 @@ std::map<int, Key> Window::m_SpecialKeys =
 	{ GLUT_KEY_NUM_LOCK, kKey_NumLock }
 };
 
-ResizeEventArgs::ResizeEventArgs(int width, int height)
+WindowEventArgs::WindowEventArgs(Window *target)
+{
+	Target = target;
+}
+
+ResizeEventArgs::ResizeEventArgs(Window *target, int width, int height)
+	: WindowEventArgs(target)
 {
 	Width = width;
 	Height = height;
 }
 
-MoveEventArgs::MoveEventArgs(int x, int y)
+MoveEventArgs::MoveEventArgs(Window *target, int x, int y)
+	: WindowEventArgs(target)
 {
 	X = x;
 	Y = y;
 }
 
-MouseEventArgs::MouseEventArgs(int x, int y)
+MouseEventArgs::MouseEventArgs(Window *target, int x, int y)
+	: WindowEventArgs(target)
 {
 	X = x;
 	Y = y;
@@ -61,7 +69,8 @@ MouseEventArgs::MouseEventArgs(int x, int y)
 	Button = kMouseButton_None;
 }
 
-MouseEventArgs::MouseEventArgs(int x, int y, MouseButton button)
+MouseEventArgs::MouseEventArgs(Window *target, int x, int y, MouseButton button)
+	: WindowEventArgs(target)
 {
 	X = x;
 	Y = y;
@@ -69,7 +78,8 @@ MouseEventArgs::MouseEventArgs(int x, int y, MouseButton button)
 	Delta = 0;
 }
 
-MouseEventArgs::MouseEventArgs(int x, int y, int delta)
+MouseEventArgs::MouseEventArgs(Window *target, int x, int y, int delta)
+	: WindowEventArgs(target)
 {
 	X = x;
 	Y = y;
@@ -77,12 +87,14 @@ MouseEventArgs::MouseEventArgs(int x, int y, int delta)
 	Button = kMouseButton_None;
 }
 
-KeyPressEventArgs::KeyPressEventArgs(unsigned char c)
+KeyPressEventArgs::KeyPressEventArgs(Window *target, unsigned char c)
+	: WindowEventArgs(target)
 {
 	Char = c;
 }
 
-KeyEventArgs::KeyEventArgs(int value, unsigned modifiers)
+KeyEventArgs::KeyEventArgs(Window *target, int value, unsigned modifiers)
+	: WindowEventArgs(target)
 {
 	Value = value;
 	Alt = modifiers & kKey_Alt;
@@ -90,7 +102,8 @@ KeyEventArgs::KeyEventArgs(int value, unsigned modifiers)
 	Shift = modifiers & kKey_Shift;
 }
 
-KeyEventArgs::KeyEventArgs(Key special)
+KeyEventArgs::KeyEventArgs(Window *target, Key special)
+	: WindowEventArgs(target)
 {
 	Value = special;
 	Alt = special == kKey_Alt;
@@ -126,7 +139,7 @@ void Window::onPosition(int x, int y)
 	window->m_Y = y;
 
 	// Trigger event
-	MoveEventArgs args(x, y);
+	MoveEventArgs args(window, x, y);
 	window->OnMove(args);
 }
 
@@ -139,7 +152,7 @@ void Window::onResize(int width, int height)
 	window->m_Height = height;
 
 	// Trigger event
-	ResizeEventArgs args(width, height);
+	ResizeEventArgs args(window, width, height);
 	window->OnResize(args);
 }
 
@@ -147,7 +160,7 @@ void Window::onMouseMove(int x, int y)
 {
 	const auto window = static_cast<Window *>(glutGetWindowData());
 	
-	MouseEventArgs args(x, y);
+	MouseEventArgs args(window, x, y);
 	window->OnMouseMove(args);
 }
 
@@ -163,7 +176,7 @@ void Window::onMouseButton(int button, int state, int x, int y)
 	else if (button == GLUT_MIDDLE_BUTTON)
 		mouseButton = kMouseButton_Middle;
 
-	MouseEventArgs args(x, y, mouseButton);
+	MouseEventArgs args(window, x, y, mouseButton);
 	if (state == GLUT_DOWN)
 		window->OnMouseDown(args);
 	else if (state == GLUT_UP)
@@ -174,7 +187,7 @@ void Window::onMouseWheel(int mouse, int direction, int x, int y)
 {
 	const auto window = static_cast<Window *>(glutGetWindowData());
 
-	MouseEventArgs args(x, y, direction);
+	MouseEventArgs args(window, x, y, direction);
 	window->OnMouseWheel(args);
 }
 
@@ -202,12 +215,12 @@ void Window::onKeyDown(unsigned char key, int x, int y)
 		{
 			it->second = kKeyState_Down;
 
-			KeyEventArgs args(key, modifiers);
+			KeyEventArgs args(window, key, modifiers);
 			window->OnKeyDown(args);
 		}
 	}
 
-	KeyPressEventArgs args(key);
+	KeyPressEventArgs args(window, key);
 	window->OnKeyPress(args);
 }
 
@@ -235,7 +248,7 @@ void Window::onKeyUp(unsigned char key, int x, int y)
 		{
 			it->second = kKeyState_Up;
 
-			KeyEventArgs args(key, modifiers);
+			KeyEventArgs args(window, key, modifiers);
 			window->OnKeyDown(args);
 		}
 	}
@@ -251,7 +264,7 @@ void Window::onKeySpecialDown(int key, int x, int y)
 		k = kKey_None;
 	else k = it->second;
 
-	KeyEventArgs args(k);
+	KeyEventArgs args(window, k);
 	window->OnKeyDown(args);
 }
 
@@ -265,7 +278,7 @@ void Window::onKeySpecialUp(int key, int x, int y)
 		k = kKey_None;
 	else k = it->second;
 
-	KeyEventArgs args(k);
+	KeyEventArgs args(window, k);
 	window->OnKeyUp(args);
 }
 

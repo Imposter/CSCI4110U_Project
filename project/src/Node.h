@@ -1,23 +1,28 @@
 #pragma once
 
 #include "GraphicsManager.h"
+#include "Transform.h"
 #include "Memory.h"
 #include "Utility/Exception.h"
 #include <vector>
 
+class Camera;
 struct RenderContext
 {
-	GraphicsManager *Graphics;
+	GraphicsManager *GraphicsManager;
+	Camera *Camera;
 };
 
 DEFINE_EXCEPTION(NodeNotFoundException);
 
-// TODO/NOTE: Nodes should have transforms
 class Node
 {
+protected:
 	std::string m_Name;
 	Node *m_Parent;
 	std::vector<Node *> m_Children;
+	Transform m_Transform;
+	bool m_IsActive;
 
 public:
 	Node(std::string name = "Node", Node *parent = nullptr);
@@ -74,6 +79,11 @@ public:
 
 		THROW_EXCEPTION(NodeNotFoundException, "Node does not exist: %s", typeid(TNode).name());
 	}
+
+	Transform *GetTransform();
+
+	bool IsActive() const;
+	void SetActive(bool active);
 
 	virtual ~Node();
 

@@ -17,8 +17,6 @@ protected:
 	Object *m_Parent;
 	std::vector<Object *> m_Children;
 
-	Transform m_Transform;
-
 public:
 	Object(std::string name = "Object", Object *parent = nullptr);
 
@@ -31,7 +29,7 @@ public:
 
 	const std::string &GetName() const;
 
-	const bool &IsActive() const;
+	bool IsActive() const;
 	void SetActive(bool active);
 
 	Object *GetParent() const;
@@ -86,11 +84,9 @@ public:
 		THROW_EXCEPTION(ObjectNotFoundException, "Object does not exist: %s", typeid(TObj).name());
 	}
 
-	Transform *GetTransform();
-
 	virtual ~Object();
 	
-	virtual void Update(float deltaTime);	
-	virtual void Render(float deltaTime);	
+	virtual void Update(float time, float deltaTime);	
+	virtual void Render(float time, float deltaTime);	
 	virtual void Shutdown();
 };

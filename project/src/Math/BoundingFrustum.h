@@ -13,7 +13,6 @@ enum ContainmentType
 // From: https://github.com/sharpdx/SharpDX
 class BoundingFrustum
 {
-	glm::mat4x4 m_Matrix;
 	Plane m_Near;
 	Plane m_Far;
 	Plane m_Left;

@@ -1,92 +1,37 @@
 #include "Memory.h"
 #include "Log.h"
 #include "Window.h"
-#include "GraphicsManager.h"
-#include "Object.h"
-#include "ModelManager.h"
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
+#define WINDOW_TITLE "CSCI4110U Final Project"
 #define WIDTH 1024
 #define HEIGHT 600
 #define FULLSCREEN false
-#define WIREFRAME false
+#define WIREFRAME false // TODO: Testing
 
-// Constants
-const glm::vec3 Up(0.0f, 1.0f, 0.0f);
-const glm::vec3 LookTarget(0.0f, 0.0f, 0.0f);
-const glm::vec3 EyePosition(10.0, 10.0f, 10.0f);
-
+// Vars
 Window *g_Window;
-unsigned int g_Width;
-unsigned int g_Height;
+float g_LastUpdateTime = 0;
+float g_LastRenderTime = 0;
 
-GraphicsManager *g_GraphicsManager;
-ModelManager *g_ModelManager;
-
-// Program variables
-float g_LastTime;
-glm::mat4 g_ViewMatrix;
-glm::mat4 g_ProjectionMatrix;
-
-// App
-Shader *g_Shader;
-Model *g_Model;
-
-// Test
-bool g_DirectionalLightEnabled; // TODO: Make light classes and start on this
-glm::vec3 g_DirectionalLightDirection(0.0f);
-glm::vec3 g_DirectionalLightColor(0.80f, 0.80f, 0.80f);
-glm::mat4 g_EarthMatrix;
-glm::mat4 g_MoonMatrix;
-float g_MoonRotation = 0.0f;
+// Forward declarations
+extern bool Project_Initialize(Window *window);
+extern bool Project_Shutdown();
+extern void Project_Update(float time, float deltaTime);
+extern void Project_Render(float time, float deltaTime);
 
 static void Update()
 {
 	const auto time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
-	const auto deltaTime = time - g_LastTime;
+	const auto deltaTime = time - g_LastUpdateTime;
 
-	// Set earth matrix
-	g_EarthMatrix = glm::mat4(1.0f);
-	g_EarthMatrix = glm::scale(g_EarthMatrix, glm::vec3(0.005f));//glm::vec3(1.5f));
-
-	// Set moon matrix
-	g_MoonRotation += deltaTime / 2.0f;
-	g_MoonMatrix = glm::mat4(1.0f);
-	g_MoonMatrix = glm::scale(g_MoonMatrix, glm::vec3(0.0001f));//glm::vec3(0.25f));
-	glm::vec3 moonPosition(cos(g_MoonRotation) * 2.0f, sin(g_MoonRotation) * 2.0f, 2.0f);
-	g_MoonMatrix = glm::translate(g_MoonMatrix, moonPosition);
-
-	// Use shader
-	g_Shader->Use();
-
-	// Great site to learn from (avoid Cg): https://www.3dgep.com/texturing-and-lighting-with-opengl-and-glsl/
-
-	// Update view matrix and shit
-	g_ViewMatrix = glm::mat4(1.0f);
-	const auto aspectRatio = static_cast<float>(g_Width) / static_cast<float>(g_Height);
-	g_ProjectionMatrix = glm::ortho(-10.0f * aspectRatio, 10.0f * aspectRatio, -10.0f, 10.0f, -100.0f, 100.0f);
-
-	// Set view position
-	g_Shader->GetVariable("u_ViewPosition")->SetVec3(EyePosition); // -- this should not matter in the slightest -- so why do we use it?
-
-	// Set directional light information
-	g_DirectionalLightDirection = glm::normalize(moonPosition);
-	g_Shader->GetVariable("u_DirectionalLight.Enabled")->SetBool(g_DirectionalLightEnabled);
-	g_Shader->GetVariable("u_DirectionalLight.Direction")->SetVec3(g_DirectionalLightDirection);
-	g_Shader->GetVariable("u_DirectionalLight.Ambient")->SetVec3(g_DirectionalLightColor * 0.25f);
-	g_Shader->GetVariable("u_DirectionalLight.Diffuse")->SetVec3(g_DirectionalLightColor);
-	g_Shader->GetVariable("u_DirectionalLight.Specular")->SetVec3(glm::vec3(1.0f, 1.0f, 1.0f));
-	g_Shader->GetVariable("u_DirectionalLight.Intensity")->SetFloat(1.0f);
+	Project_Update(time, deltaTime);
 
 	glutPostRedisplay();
 
-	g_LastTime = time;
+	g_LastUpdateTime = time;
 }
 
 static void WindowClose()
@@ -97,68 +42,25 @@ static void WindowClose()
 
 static void WindowRender()
 {
-	// Clear buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	const auto time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+	const auto deltaTime = time - g_LastRenderTime;
 
-	// Turn on depth buffering
-	glEnable(GL_DEPTH_TEST);
-
-	// Update shader
-	g_Shader->Use();
-	g_Shader->GetVariable("u_View")->SetMat4(g_ViewMatrix); // TODO/NOTE: These should automatically be set for any shader being used to render something
-	g_Shader->GetVariable("u_Projection")->SetMat4(g_ProjectionMatrix);
-
-	// Render Earth
-	g_Shader->GetVariable("u_Model")->SetMat4(g_EarthMatrix);
-	g_Model->Render(nullptr);
-
-	// Render Moon
-	g_Shader->GetVariable("u_Model")->SetMat4(g_MoonMatrix);
-	g_Model->Render(nullptr);
-
+	Project_Render(time, deltaTime);
+	
 	// Make the draw buffer to display buffer
 	g_Window->SwapBuffers();
-}
 
-static void WindowResize(ResizeEventArgs &args)
-{
-	// Divide by zero
-	if (args.Width == 0 || args.Height == 0)
-		return;
-
-	const auto aspectRatio = static_cast<float>(args.Width) / static_cast<float>(args.Height);
-	g_ProjectionMatrix = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
-
-	// If using perpsective projection, update projection matrix
-	glViewport(0, 0, args.Width, args.Height);
-
-	// Store values
-	g_Width = args.Width;
-	g_Height = args.Height;
-}
-
-static void WindowKeyDown(KeyEventArgs &args)
-{
-	if (args.Value == kKey_Escape)
-	{
-		// Close window and proceed with shutdown
-		g_Window->Close();
-	}
-}
-
-static void WindowKeyPress(KeyPressEventArgs &args)
-{
-	if (args.Char == 'd')
-	{
-		// Toggle directional light
-		g_DirectionalLightEnabled = !g_DirectionalLightEnabled;
-	}
+	g_LastRenderTime = time;
 }
 
 #ifdef DEBUG
 static void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	const GLchar *message, const void *userParam)
 {
+	// Ignore notifications
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
 	const char *sourceStr;
 	switch (source)
 	{
@@ -265,12 +167,9 @@ int main(int argc, char **argv)
 	if (FULLSCREEN) flags |= Window::kFlag_Fullscreen;
 
 	// Create window
-	g_Window = New<Window>("CSCI4110U Final Project", width, height, flags);
+	g_Window = New<Window>(WINDOW_TITLE, width, height, flags);
 	g_Window->OnClose.Add(WindowClose);
 	g_Window->OnRender.Add(WindowRender);
-	g_Window->OnResize.Add(WindowResize);
-	g_Window->OnKeyDown.Add(WindowKeyDown);
-	g_Window->OnKeyPress.Add(WindowKeyPress);
 
 	// Initialize OpenGL
 	glewInit();
@@ -301,49 +200,30 @@ int main(int argc, char **argv)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 #endif
+			
+	// Turn on depth buffering
+	glEnable(GL_DEPTH_TEST);
 
-	// Create the view matrix (position and orient the camera)
-	g_ViewMatrix = glm::lookAt(EyePosition, LookTarget, Up);
-
-	// Create graphics manager
-	g_GraphicsManager = New<GraphicsManager>("data");
-
-	try
+	// Try initializing
+	if (!Project_Initialize(g_Window))
 	{
-		// Create shader
-		g_Shader = g_GraphicsManager->GetShader("Diffuse");
-
-		// Create model manager
-		g_ModelManager = New<ModelManager>("data/models", g_GraphicsManager);
-
-		// Load model
-		g_Model = g_ModelManager->GetModel("earth");
-	}
-	catch (ShaderCompileException &ex)
-	{
-		LOG_TRACE("Main", ex.what());
-
-		// No cleanup
-		return 1;
-	}
-	catch (ModelLoadException &ex)
-	{
-		LOG_TRACE("Main", ex.what());
-
-		// No cleanup
+		// Exit with error
 		return 1;
 	}
 
 	// Run main loop
 	glutMainLoop();
 
+	// Try shutting down
+	if (!Project_Shutdown())
+	{
+		// Exit with error
+		return 1;
+	}
+
 	try
 	{
-		// Shutdown
-		Delete(g_ModelManager);
-		Delete(g_GraphicsManager);
-
-		// Close window
+		// Deallocate window
 		Delete(g_Window);
 
 		// Shutdown memory subsystem
@@ -364,5 +244,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	// Exit successfully
 	return 0;
 }

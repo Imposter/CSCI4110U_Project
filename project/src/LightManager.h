@@ -12,6 +12,8 @@
 
 DEFINE_EXCEPTION(LightNotFoundException);
 
+// NOTE: This class is unused... for now.
+
 // TODO: LightDefineVar? -- kind of like in Material?
 
 // TODO: GetVar function, typeName so we can just Shader->GetVar("u_Lights[type][index].prop")

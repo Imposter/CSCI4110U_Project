@@ -1,7 +1,7 @@
 #include "Object.h"
 
 Object::Object(std::string name, Object *parent)
-	: m_Name(std::move(name)), m_IsActive(true), m_Parent(parent), m_Transform(parent ? &parent->m_Transform : nullptr)
+	: m_Name(std::move(name)), m_IsActive(true), m_Parent(parent)
 {
 }
 
@@ -10,7 +10,7 @@ const std::string &Object::GetName() const
 	return m_Name;
 }
 
-const bool &Object::IsActive() const
+bool Object::IsActive() const
 {
 	return m_IsActive;
 }
@@ -31,7 +31,6 @@ void Object::AddChild(Object *obj)
 		obj->m_Parent->RemoveChild(obj);
 
 	obj->m_Parent = this;
-	obj->m_Transform.SetParent(&m_Transform);
 	m_Children.push_back(obj);
 }
 
@@ -51,12 +50,6 @@ void Object::RemoveChild(Object *obj)
 	}
 
 	obj->m_Parent = nullptr;
-	obj->m_Transform.SetParent(nullptr);
-}
-
-Transform *Object::GetTransform()
-{
-	return &m_Transform;
 }
 
 Object::~Object()
@@ -70,20 +63,20 @@ Object::~Object()
 	m_Children.clear();
 }
 
-void Object::Update(float deltaTime)
+void Object::Update(float time, float deltaTime)
 {
 	// Update all children
 	for (auto &obj : m_Children)
 		if (obj->m_IsActive)
-			obj->Update(deltaTime);
+			obj->Update(time, deltaTime);
 }
 
-void Object::Render(float deltaTime)
+void Object::Render(float time, float deltaTime)
 {
 	// Render all children
 	for (auto &obj : m_Children)
 		if (obj->m_IsActive)
-			obj->Render(deltaTime);
+			obj->Render(time, deltaTime);
 }
 
 void Object::Shutdown()

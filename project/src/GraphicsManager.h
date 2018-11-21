@@ -9,7 +9,7 @@ class GraphicsManager
 	std::string m_DataPath;
 	std::map<std::string, Shader *> m_Shaders;
 	std::map<std::string, Texture *> m_Textures;
-	// TODO: Materials
+	// TODO: Materials?
 
 public:
 	GraphicsManager(std::string dataPath);
@@ -21,7 +21,7 @@ public:
 
 	GraphicsManager(const GraphicsManager &&) = delete;
 	GraphicsManager &operator=(const GraphicsManager &&) = delete;
-
+	
 	Shader *GetShader(const std::string &name);
 	Texture *GetTexture(const std::string &name);
 }; 

@@ -124,45 +124,45 @@ Material *ModelManager::processMaterial(std::map<std::string, std::string> &mate
 	// Colors
 	{
 		aiColor3D value;
-		if (material->Get(AI_MATKEY_COLOR_AMBIENT, value) == AI_SUCCESS)
+		/*if (material->Get(AI_MATKEY_COLOR_AMBIENT, value) == AI_SUCCESS)
 		{
 			const auto v = m->GetVariable(kMaterialVar_Ambient);
 			v->SetVec3({ value.r, value.g, value.b });
-		}
+		}*/
 		if (material->Get(AI_MATKEY_COLOR_DIFFUSE, value) == AI_SUCCESS)
 		{
 			const auto v = m->GetVariable(kMaterialVar_Diffuse);
 			v->SetVec3({ value.r, value.g, value.b });
 		}
-		if (material->Get(AI_MATKEY_COLOR_SPECULAR, value) == AI_SUCCESS)
+		/*if (material->Get(AI_MATKEY_COLOR_SPECULAR, value) == AI_SUCCESS)
 		{
 			const auto v = m->GetVariable(kMaterialVar_Specular);
 			v->SetVec3({ value.r, value.g, value.b });
-		}
+		}*/
 	}
 
 	// Textures (NOTE: only one per property is supported)
 	{
 		aiString path;
-		if (material->GetTextureCount(aiTextureType_AMBIENT))
-			if (material->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS)
-				loadTexture(m, path.C_Str(), kMaterialVar_TextureAmbient, kMaterialVar_TextureAmbientEnabled);
+		//if (material->GetTextureCount(aiTextureType_AMBIENT))
+		//	if (material->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS)
+		//		loadTexture(m, path.C_Str(), kMaterialVar_TextureAmbient, kMaterialVar_TextureAmbientEnabled);
 		if (material->GetTextureCount(aiTextureType_DIFFUSE))
 			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
 				loadTexture(m, path.C_Str(), kMaterialVar_TextureDiffuse, kMaterialVar_TextureDiffuseEnabled);
-		if (material->GetTextureCount(aiTextureType_SPECULAR))
-			if (material->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS)
-				loadTexture(m, path.C_Str(), kMaterialVar_TextureSpecular, kMaterialVar_TextureSpecularEnabled);
+		//if (material->GetTextureCount(aiTextureType_SPECULAR))
+		//	if (material->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS)
+		//		loadTexture(m, path.C_Str(), kMaterialVar_TextureSpecular, kMaterialVar_TextureSpecularEnabled);
 	}
 
 	// Other properties
 	{
 		float value;
-		if (material->Get(AI_MATKEY_SHININESS, value) == AI_SUCCESS)
+		/*if (material->Get(AI_MATKEY_SHININESS, value) == AI_SUCCESS)
 		{
 			const auto v = m->GetVariable(kMaterialVar_Shininess);
 			v->SetFloat(value);
-		}
+		}*/
 	}
 
 	// TODO: etc...

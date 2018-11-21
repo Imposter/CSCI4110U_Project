@@ -1,6 +1,6 @@
 [submodule "dependencies/RapidJSON"]
 	path = dependencies/RapidJSON
 	url = https://github.com/Tencent/rapidjson
-[submodule "dependencies/AssImp"]
-	path = dependencies/AssImp
+[submodule "dependencies/assimp"]
+	path = dependencies/assimp
 	url = https://github.com/assimp/assimp

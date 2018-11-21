@@ -1,7 +1,9 @@
 #include "Model.h"
+#include "Camera.h" 
+// TODO: Abstract camera
 
 Model::Model(std::string name, std::vector<Mesh *> meshes, std::vector<Material *> materials)
-	: m_Name(std::move(name)), m_Meshes(std::move(meshes)), m_Materials(std::move(materials))
+	: Node(std::move(name)), m_Meshes(std::move(meshes)), m_Materials(std::move(materials))
 {
 }
 
@@ -44,10 +46,17 @@ void Model::Compile()
 {
 	for (auto &m : m_Meshes)
 		m->Compile();
+
+	Node::Compile();
 }
 
 void Model::Render(RenderContext *context)
 {
+	// Set transform matrix
+	context->Camera->SetModelTransform(&m_Transform);
+
 	for (auto &m : m_Meshes)
 		m->Render(context);
+
+	Node::Render(context);
 }

@@ -1,15 +1,15 @@
 #pragma once
 
+#include "Node.h"
 #include "Mesh.h"
 #include "Utility/Exception.h"
 
 DEFINE_EXCEPTION(MeshNotFoundException);
 DEFINE_EXCEPTION(MaterialNotFoundException);
 
-class Model
+class Model : public Node
 {
-	std::string m_Name;
-	std::vector<Mesh *> m_Meshes;
+	std::vector<Mesh *> m_Meshes; // TODO: Move this to Model::m_Children later
 	std::vector<Material *> m_Materials;
 
 public:
@@ -28,6 +28,6 @@ public:
 	Mesh *GetMesh(const std::string &name) const;
 	Material *GetMaterial(const std::string &name) const;
 
-	void Compile();
-	void Render(RenderContext *context);
+	void Compile() override;
+	void Render(RenderContext *context) override;
 };

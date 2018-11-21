@@ -3,6 +3,7 @@
 void BoundingFrustum::GetPlanesFromMatrix(const glm::mat4x4 &matrix, Plane &near, Plane &far, Plane &left, Plane &right,
 	Plane &top, Plane &bottom)
 {
+	// From: https://github.com/sharpdx/SharpDX
 	// http://www.chadvernon.com/blog/resources/directx9/frustum-culling/
 
 	// Left plane
@@ -61,13 +62,14 @@ void BoundingFrustum::GetPlanesFromMatrix(const glm::mat4x4 &matrix, Plane &near
 }
 
 BoundingFrustum::BoundingFrustum(glm::mat4x4 matrix)
-	: m_Matrix(matrix)
 {
 	GetPlanesFromMatrix(matrix, m_Near, m_Far, m_Left, m_Right, m_Top, m_Bottom);
 }
 
 ContainmentType BoundingFrustum::Contains(const glm::vec3 &vec) const
 {
+	// From: https://github.com/sharpdx/SharpDX
+	// http://www.chadvernon.com/blog/resources/directx9/frustum-culling/
 	auto res = kPlaneIntersectionType_Front;
 	auto planeRes = kPlaneIntersectionType_Front;
 	for (auto i = 0; i < 6; i++)

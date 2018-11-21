@@ -63,51 +63,59 @@ enum Key
 	kKey_Alt = 0x40000
 };
 
-struct ResizeEventArgs : EventArgs
+class Window;
+struct WindowEventArgs : EventArgs
+{
+	Window *Target;
+
+	WindowEventArgs(Window *target);
+};
+
+struct ResizeEventArgs : WindowEventArgs
 {
 	int Width;
 	int Height;
 
-	ResizeEventArgs(int width, int height);
+	ResizeEventArgs(Window *target, int width, int height);
 };
 
-struct MoveEventArgs : EventArgs
+struct MoveEventArgs : WindowEventArgs
 {
 	int X;
 	int Y;
 
-	MoveEventArgs(int x, int y);
+	MoveEventArgs(Window *target, int x, int y);
 };
 
-struct MouseEventArgs : EventArgs
+struct MouseEventArgs : WindowEventArgs
 {
 	int X;
 	int Y;
 	MouseButton Button;
 	int Delta;
 
-	MouseEventArgs(int x, int y);
-	MouseEventArgs(int x, int y, MouseButton button);
-	MouseEventArgs(int x, int y, int delta);
+	MouseEventArgs(Window *target, int x, int y);
+	MouseEventArgs(Window *target, int x, int y, MouseButton button);
+	MouseEventArgs(Window *target, int x, int y, int delta);
 };
 
 // For ASCII -- we might require caching
-struct KeyPressEventArgs : EventArgs
+struct KeyPressEventArgs : WindowEventArgs
 {
 	unsigned char Char;
 
-	KeyPressEventArgs(unsigned char c);
+	KeyPressEventArgs(Window *target, unsigned char c);
 };
 
-struct KeyEventArgs : EventArgs
+struct KeyEventArgs : WindowEventArgs
 {
 	int Value;
 	bool Alt;
 	bool Control;
 	bool Shift;
 
-	KeyEventArgs(int value, unsigned int modifiers);
-	KeyEventArgs(Key special);
+	KeyEventArgs(Window *target, int value, unsigned int modifiers);
+	KeyEventArgs(Window *target, Key special);
 };
 
 class Window

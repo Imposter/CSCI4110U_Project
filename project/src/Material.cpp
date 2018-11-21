@@ -268,7 +268,7 @@ std::vector<MaterialVariable *> Material::GetVariables() const
 
 void Material::Apply()
 {
-	// Use shader
+	// Activate shader
 	m_Shader->Use();
 
 	// Apply material vars
