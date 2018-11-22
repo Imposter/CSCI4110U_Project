@@ -212,16 +212,11 @@ void Window::onKeyDown(unsigned char key, int x, int y)
 	else
 	{
 		if (it->second == kKeyState_Up)
-		{
 			it->second = kKeyState_Down;
-
-			KeyEventArgs args(window, key, modifiers);
-			window->OnKeyDown(args);
-		}
 	}
 
-	KeyPressEventArgs args(window, key);
-	window->OnKeyPress(args);
+	KeyEventArgs args(window, key, modifiers);
+	window->OnKeyDown(args);
 }
 
 void Window::onKeyUp(unsigned char key, int x, int y)
@@ -248,10 +243,13 @@ void Window::onKeyUp(unsigned char key, int x, int y)
 		{
 			it->second = kKeyState_Up;
 
-			KeyEventArgs args(window, key, modifiers);
-			window->OnKeyDown(args);
+			KeyPressEventArgs args(window, key);
+			window->OnKeyPress(args);
 		}
 	}
+
+	KeyEventArgs args(window, key, modifiers);
+	window->OnKeyUp(args);
 }
 
 void Window::onKeySpecialDown(int key, int x, int y)
@@ -429,6 +427,15 @@ void Window::SetCursorVisible(bool visible)
 	m_CursorVisible = visible;
 	glutSetWindow(m_ID);
 	glutSetCursor(visible ? GLUT_CURSOR_LEFT_ARROW : GLUT_CURSOR_NONE);
+}
+
+KeyState Window::GetKeyState(int key) const
+{
+	std::map<int, KeyState>::const_iterator it;
+	if ((it = m_KeyStates.find(key)) == m_KeyStates.end())
+		return kKeyState_Up;
+
+	return it->second;
 }
 
 bool Window::IsVisible() const

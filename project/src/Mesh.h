@@ -83,7 +83,7 @@ public:
 	void Render(RenderContext *context) override
 	{
 		// Apply material
-		if (m_Material)	m_Material->Apply();
+		if (m_Material) m_Material->Apply();
 
 		// Bind vertex array
 		m_VertexArray->Bind();

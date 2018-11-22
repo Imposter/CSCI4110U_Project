@@ -19,7 +19,8 @@ out vec4 FragColor;
 
 void main()
 {
-	FragColor = vec4(u_Material.Diffuse, 0.0f) * 0.0001f;
+	//FragColor = vec4(u_Material.Diffuse, 0.0f) * 0.0001f;
 	// TEST DEBUG
-	FragColor = FragColor + vec4(1.0f, 0.0f, 0.0f, 1.0f);//FragColor = vec4(u_Material.Diffuse, 1.0f);
+	//FragColor = FragColor + vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	FragColor = vec4(u_Material.Diffuse, 1.0f);
 }

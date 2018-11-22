@@ -11,10 +11,10 @@ void Star::Update(float time, float deltaTime)
 {
 	// Set position
 	const auto transform = m_Model->GetTransform();
-	transform->SetPosition(glm::vec3(0.0f));//transform->SetPosition(m_Position);
+	transform->SetPosition(m_Position);
 
-	// TODO: Make star "twinkle"
-	const glm::vec3 size(m_MinSize);//const glm::vec3 size(m_MinSize + sin(time * m_ScaleRate) * m_MaxSize);
+	// Make star "twinkle"
+	const glm::vec3 size(m_MinSize + sin(time * m_ScaleRate) * m_MaxSize);
 	transform->SetScale(size);
 }
 
@@ -36,10 +36,10 @@ void GenerateStars(int count, float innerRadius, float outerRadius, float minSiz
 		// Add randomization to color
 		const auto brightness = RandomFloat(0.5f, 0.8f);
 
-		const glm::vec3 color(1.0f * brightness, 1.0f * brightness, 0.0f);
+		const glm::vec3 color(1.0f * brightness, 1.0f * brightness, 1.0f * brightness);
 
 		// Set material vars
-		//material->GetVariable(kMaterialVar_Diffuse)->SetVec3(color);
+		material->GetVariable(kMaterialVar_Diffuse)->SetVec3(color);
 
 		// Get indices
 		const auto &indices = sphere.GetIndices();
@@ -60,12 +60,18 @@ void GenerateStars(int count, float innerRadius, float outerRadius, float minSiz
 		std::vector<Material *> materials;
 		meshes.push_back(mesh);
 		materials.push_back(material);
-		const auto model = parentNode->CreateChild<Model>("Star", meshes, materials);//const auto model = New<Model>("Star", meshes, materials);
+		const auto model = parentNode->CreateChild<Model>("Star", meshes, materials);
 
 		// Create random position
-		const auto posX = RandomFloat(innerRadius, outerRadius);
-		const auto posY = RandomFloat(innerRadius, outerRadius);
-		const auto posZ = RandomFloat(innerRadius, outerRadius);
+		auto posX = RandomFloat(innerRadius, outerRadius);
+		auto posY = RandomFloat(innerRadius, outerRadius);
+		auto posZ = RandomFloat(innerRadius, outerRadius);
+
+		// Negate positions
+		if (RandomInt(0, 2) == 0) posX *= -1.0f;
+		if (RandomInt(0, 2) == 0) posY *= -1.0f;
+		if (RandomInt(0, 2) == 0) posZ *= -1.0f;
+
 		const glm::vec3 pos(posX, posY, posZ);
 
 		// Create random scale rate

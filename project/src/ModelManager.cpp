@@ -244,6 +244,11 @@ ModelManager::~ModelManager()
 	m_Models.clear();
 }
 
+Model *ModelManager::LoadModel(const std::string &name)
+{
+	return loadFromFile(name);
+}
+
 Model *ModelManager::GetModel(const std::string &name)
 {
 	// Check if it is already loaded

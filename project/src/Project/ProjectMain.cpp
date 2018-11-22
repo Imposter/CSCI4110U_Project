@@ -4,36 +4,36 @@
 #include "../ModelManager.h"
 #include "../Camera.h"
 #include "../Object.h"
-#include "Star.h"
-
-// TEST
-#include "UVSphere.h"
 #include "Util.h"
+#include "Star.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 // Constants
-const float CameraFOV = 60.0f;
-const float CameraNearClip = 0.1f;
+const float CameraFOV = 50.0f;
+const float CameraNearClip = 0.01f;
 const float CameraFarClip = 1000000.0f;
 const glm::vec4 CameraClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+const float CameraClearDepth = 1.0f;
 
-const glm::vec3 Up(0.0f, 1.0f, 0.0f);
 const glm::vec3 LookTarget(0.0f, 0.0f, 0.0f);
-const glm::vec3 EyePosition(10.0, 10.0f, 10.0f);
+const glm::vec3 EyePosition(0.0f, 0.0f, 30.0f); // X, Y, -Z (where X is left/right, Y is up/down, Z is in/out)
 
-const int StarCount = 25;//100000;
-const float StarInnerRadius = 0.0f;//500.0f;
-const float StarOuterRadius = 5.0f;//100000.0f;
-const float StarMinSize = 1.0f;//10.0f;
-const float StarMaxSize = 10.0f;//100.0f;
+const int StarCount = 500;
+const float StarInnerRadius = 10.0f;
+const float StarOuterRadius = 50.0f;
+const float StarMinSize = 0.075f;
+const float StarMaxSize = 0.10f;
+
+const glm::vec3 ShipStartPosition(0.0f, -10.0f, 0.0f);
 
 // Vars
 unsigned int g_Width;
 unsigned int g_Height;
 
+Window *g_RootWindow;
 GraphicsManager *g_GraphicsManager;
 ModelManager *g_ModelManager;
 
@@ -43,47 +43,34 @@ Node *g_RootNode;
 
 Shader *g_FlatShader;
 
-// TEST
-Model *g_Model;
+Model *g_ShipModel;
 
-void GenMesh()
+void CreateScene()
 {
+	// Generate star field
+	GenerateStars(StarCount, StarInnerRadius, StarOuterRadius, StarMinSize, StarMaxSize, g_FlatShader, g_RootObject, g_RootNode);
+
 	// Load model
-	// TODO/NOTE: We've changed shaders for this to flat in meta.json
-	g_Model = g_ModelManager->GetModel("Ship1");
-	const auto t = g_Model->GetTransform(); // NODES werent meant to have transforms because now we cant share models, but oh well? -- unless we remove Model from node class and pass a transform to model before rendering?
-	t->SetScale(glm::vec3(10.0f));
+	g_ShipModel = g_ModelManager->LoadModel("Ship1");
+	g_RootNode->AddChild(g_ShipModel);
 
-	/*
-	// Generate mesh
-	const UVSphere sphere(STAR_RESOLUTION, STAR_RESOLUTION, 1.0f);
-
-	// Create material
-	const auto material = New<Material>("StarMaterial", g_FlatShader); // TODO: Leak
-
-	const glm::vec3 color(1.0f, 0.0f, 0.0f);
-
-	// Set material vars
-	material->GetVariable(kMaterialVar_Diffuse)->SetVec3(color);
-
-	// Get indices
-	const auto &indices = sphere.GetIndices();
-
-	// Store vertices
-	std::vector<MeshVertex> vertices;
-	const auto &positions = sphere.GetPositions();
-	const auto &normals = sphere.GetNormals();
-	const auto &texCoords = sphere.GetTextureCoords();
-	for (size_t j = 0; j < positions.size(); j++)
-		vertices.emplace_back(positions[j], normals[j], texCoords[j]);
-
-	// Create mesh
-	g_RootNode->CreateChild<Mesh>("Star", vertices, indices, material);
-	*/
+	// Set ship transform
+	const auto shipTransform = g_ShipModel->GetTransform();
+	shipTransform->SetScale(glm::vec3(1.0f));
+	shipTransform->SetPosition(ShipStartPosition);
 }
 
 void Project_Update(float time, float deltaTime)
 {
+	//// TEST: Slowly move cam
+	//const auto tCam = g_Camera->GetTransform(); // TODO/NOTE: Why are the axis busted on the cam?
+	////transform->OffsetRotation(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(1.0f));
+	////tCam->OffsetPosition(tCam->Forward() * 0.01f);
+
+	const auto tModel = g_ShipModel->GetTransform();
+	tModel->OffsetPosition(tModel->Right() * 0.1f);
+	////tModel->OffsetRotation(tModel->Forward(), glm::radians(5.0f));
+
 	// Update objects
 	g_RootObject->Update(time, deltaTime);
 
@@ -99,8 +86,7 @@ void Project_Render(float time, float deltaTime)
 	g_RootObject->Render(time, deltaTime);
 
 	// Render camera and nodes
-	//g_Camera->Render(g_RootNode, deltaTime);
-	g_Camera->Render(g_Model, deltaTime);
+	g_Camera->Render(g_RootNode, deltaTime);
 }
 
 // Window events
@@ -137,6 +123,9 @@ void Project_WindowKeyPress(KeyPressEventArgs &args)
 
 bool Project_Initialize(Window *window)
 {
+	// Store window
+	g_RootWindow = window;
+
 	// Setup window events
 	window->OnResize.Add(Project_WindowResize);
 	window->OnKeyDown.Add(Project_WindowKeyDown);
@@ -155,9 +144,13 @@ bool Project_Initialize(Window *window)
 
 		// Create camera
 		g_Camera = New<Camera>(CameraFOV, CameraNearClip, CameraFarClip, static_cast<float>(window->GetWidth()) / static_cast<float>(window->GetHeight()), g_GraphicsManager);
-		g_Camera->SetClearMode(kCameraClearMode_Color);
+		g_Camera->SetClearMode(kCameraClearMode_Both);
 		g_Camera->SetClearColor(CameraClearColor);
-		g_Camera->LookAt(LookTarget, EyePosition, Up);
+		g_Camera->SetClearDepth(CameraClearDepth);
+
+		//g_Camera->GetTransform()->SetPosition(g_Camera->GetTransform()->Up() * 5.0f); // Move right
+		g_Camera->GetTransform()->SetPosition(EyePosition);
+		g_Camera->GetTransform()->LookAt(LookTarget);
 
 		// Create root object
 		g_RootObject = New<Object>("Root");
@@ -167,16 +160,11 @@ bool Project_Initialize(Window *window)
 
 		// Get flat shader
 		g_FlatShader = g_GraphicsManager->GetShader("Flat");
-		// TODO: Use shader -- we have errors for some unknown reason
-		g_FlatShader->Use();
+		g_FlatShader->Use(); // We shouldn't need to use here, but there's errors
 
-		// Generate star field
-		//GenerateStars(StarCount, StarInnerRadius, StarOuterRadius, StarMinSize, StarMaxSize, g_FlatShader, g_RootObject, g_RootNode);
+		// Create scene
+		CreateScene();
 
-		// TODO: Test gen star
-		GenMesh();
-
-		// TODO: Other shizzle
 	}
 	catch (ShaderCompileException &ex)
 	{

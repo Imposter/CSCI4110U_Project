@@ -38,5 +38,9 @@ public:
 	ModelManager(const ModelManager &&) = delete;
 	ModelManager &operator=(const ModelManager &&) = delete;
 
+	// Unmanaged memory
+	Model *LoadModel(const std::string &name);
+
+	// Managed memory
 	Model *GetModel(const std::string &name);
 };

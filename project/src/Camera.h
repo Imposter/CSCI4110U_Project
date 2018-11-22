@@ -49,20 +49,16 @@ public:
 
 	Transform *GetTransform();
 
-	void Move(const glm::vec3 &v, float val);
-	void Rotate(const glm::vec3 &v, float radians);
-	void LookAt(const glm::vec3 &target, const glm::vec3 &position, const glm::vec3 &up);
-
 	float GetAspectRatio() const;
 	void SetAspectRatio(float aspectRatio);
 
 	const glm::mat4 &GetProjectionMatrix() const;
 	const glm::mat4 &GetViewMatrix() const;
-
+	
 	void SetModelTransform(Transform *transform);
 
 	BoundingFrustum GetBoundingFrustum() const;
 
 	void Update(float deltaTime);
-	void Render(Node *node, float deltaTime);
+	void Render(Node *node, float deltaTime, bool clear = true);
 };

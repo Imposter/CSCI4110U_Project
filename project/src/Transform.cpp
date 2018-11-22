@@ -1,5 +1,6 @@
 #include "Transform.h"
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 void Transform::applyOperation(const Transform *transform, glm::mat4 &matrix, Operation operation)
@@ -18,28 +19,8 @@ void Transform::applyOperation(const Transform *transform, glm::mat4 &matrix, Op
 	}
 }
 
-void Transform::rotationMatrixToEuler(glm::mat4 &m, glm::vec3 &v)
-{
-	const auto sy = sqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0]);
-	if (sy < 1e-6)
-	{
-		v.x = atan2(-m[1][2], m[1][1]);
-		v.y = atan2(-m[2][0], sy);
-		v.z = 0;
-	}
-	else
-	{
-		v.x = atan2(m[2][1], m[2][2]);
-		v.y = atan2(-m[2][0], sy);
-		v.z = atan2(m[1][0], m[0][0]);
-	}
-}
-
 void Transform::update()
 {
-	// Reset transform
-	m_Matrix = glm::mat4(1.0f);
-
 	// Get total position
 	glm::mat4 positionTransform(1.0f);
 	applyOperation(this, positionTransform, kOperation_Position);
@@ -48,22 +29,9 @@ void Transform::update()
 	glm::mat4 rotationTransform(1.0f);
 	applyOperation(this, rotationTransform, kOperation_Rotation);
 
-	// Get position from position matrix
-	const glm::vec3 position(positionTransform[3]);
-
-	// Get rotation from rotation matrix
-	glm::vec3 rotation(0.0f);
-	rotationMatrixToEuler(rotationTransform, rotation);
-
-	// Apply rotation
-	m_Matrix = glm::rotate(m_Matrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-	m_Matrix = glm::rotate(m_Matrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-	m_Matrix = glm::rotate(m_Matrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	// Apply translation
-	m_Matrix = glm::translate(m_Matrix, position);
-
-	// Apply scale
+	// Build transform matrix
+	m_Matrix = rotationTransform;
+	m_Matrix[3] = positionTransform[3];
 	m_Matrix = glm::scale(m_Matrix, m_Scale);
 }
 
@@ -94,6 +62,12 @@ void Transform::SetPosition(const glm::vec3 &position)
 	update();
 }
 
+void Transform::OffsetPosition(const glm::vec3 &offset)
+{
+	m_Position += offset;
+	update();
+}
+
 const glm::vec3 &Transform::GetScale() const
 {
 	return m_Scale;
@@ -116,15 +90,51 @@ void Transform::SetRotation(const glm::quat &rotation)
 	update();
 }
 
-// TODO/NOTE: We might need to work on directions, move camera to top to look down, and design coordinates
+void Transform::SetRotation(const glm::vec3 &v, float radians)
+{
+	glm::mat4 rotationMatrix(1.0f);
+	rotationMatrix = glm::rotate(rotationMatrix, radians, v);
+	m_Rotation = glm::toQuat(rotationMatrix);
+	update();
+}
+
+void Transform::OffsetRotation(const glm::vec3 &v, float radians)
+{
+	auto rotationMatrix = glm::toMat4(m_Rotation);
+	rotationMatrix = glm::rotate(rotationMatrix, radians, v);
+	m_Rotation = glm::toQuat(rotationMatrix);
+	update();
+}
+
+void Transform::LookAt(const glm::vec3 &pos)
+{
+	// Create view matrix
+	const auto viewMat = glm::lookAt(m_Position, pos, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	// Decompose view matrix
+	glm::vec3 scale(0.0f);
+	glm::quat rotation(0.0f, 0.0f, 0.0f, 0.0f);
+	glm::vec3 translation(0.0f);
+	glm::vec3 skew(0.0f);
+	glm::vec4 perspective(0.0f);
+	glm::decompose(viewMat, scale, rotation, translation, skew, perspective);
+
+	// Update transform
+	m_Rotation = rotation;
+	m_Position = translation;
+	m_Scale = scale;
+	update();
+}
+
+// TODO: We should probably just fix rotation on our camera instead of doing this no?
 glm::vec3 Transform::Up() const
 {
-	return m_Matrix[1];
+	return -m_Matrix[1];
 }
 
 glm::vec3 Transform::Forward() const
 {
-	return m_Matrix[2];
+	return -m_Matrix[2];
 }
 
 glm::vec3 Transform::Right() const

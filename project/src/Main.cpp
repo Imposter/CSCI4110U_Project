@@ -9,7 +9,7 @@
 #define WIDTH 1024
 #define HEIGHT 600
 #define FULLSCREEN false
-#define WIREFRAME false // TODO: Testing
+#define WIREFRAME false
 
 // Vars
 Window *g_Window;

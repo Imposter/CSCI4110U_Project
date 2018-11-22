@@ -183,6 +183,8 @@ public:
 	bool IsCursorVisible() const;
 	void SetCursorVisible(bool visible);
 
+	KeyState GetKeyState(int key) const;
+
 	bool IsVisible() const;
 	void Show();
 	void Hide();

@@ -62,10 +62,7 @@ void Node::SetActive(bool active)
 
 Node::~Node()
 {
-	if (m_Parent)
-		m_Parent->RemoveChild(this);
-
-	for (auto &obj : m_Children)
+	for (auto obj : m_Children)
 		Delete(obj);
 
 	m_Children.clear();
@@ -73,13 +70,13 @@ Node::~Node()
 
 void Node::Compile()
 {
-	for (auto &node : m_Children)
+	for (auto node : m_Children)
 		node->Compile();
 }
 
 void Node::Render(RenderContext *context)
 {
-	for (auto &node : m_Children)
+	for (auto node : m_Children)
 		if (node->m_IsActive)
 			node->Render(context);
 }

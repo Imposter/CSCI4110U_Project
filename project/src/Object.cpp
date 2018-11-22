@@ -54,10 +54,7 @@ void Object::RemoveChild(Object *obj)
 
 Object::~Object()
 {
-	if (m_Parent)
-		m_Parent->RemoveChild(this);
-
-	for (auto &obj : m_Children)
+	for (auto obj : m_Children)
 		Delete(obj);
 
 	m_Children.clear();
@@ -66,7 +63,7 @@ Object::~Object()
 void Object::Update(float time, float deltaTime)
 {
 	// Update all children
-	for (auto &obj : m_Children)
+	for (auto obj : m_Children)
 		if (obj->m_IsActive)
 			obj->Update(time, deltaTime);
 }
@@ -74,7 +71,7 @@ void Object::Update(float time, float deltaTime)
 void Object::Render(float time, float deltaTime)
 {
 	// Render all children
-	for (auto &obj : m_Children)
+	for (auto obj : m_Children)
 		if (obj->m_IsActive)
 			obj->Render(time, deltaTime);
 }
@@ -82,6 +79,6 @@ void Object::Render(float time, float deltaTime)
 void Object::Shutdown()
 {
 	// Shutdown all children
-	for (auto &obj : m_Children)
+	for (auto obj : m_Children)
 		obj->Shutdown();
 }

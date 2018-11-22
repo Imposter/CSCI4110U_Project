@@ -1,10 +1,11 @@
 #include "Camera.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 Camera::Camera(float fov, float near, float far, float aspectRatio, GraphicsManager *graphicsManager)
 	: m_GraphicsManager(graphicsManager), m_FOV(fov), m_NearPlane(near), m_FarPlane(far), m_AspectRatio(aspectRatio), m_ClearColor(0.0f), 
-	m_ClearDepth(0.0f), m_ClearMode(kCameraClearMode_None), m_ProjectionMatrix(0.0f), m_ViewMatrix(0.0f)
+	m_ClearDepth(1.0f), m_ClearMode(kCameraClearMode_None), m_ProjectionMatrix(0.0f), m_ViewMatrix(0.0f)
 {
 	// Store shaders
 	m_Shaders.push_back(m_GraphicsManager->GetShader("Flat"));
@@ -46,36 +47,6 @@ void Camera::SetClearMode(CameraClearMode mode)
 Transform *Camera::GetTransform()
 {
 	return &m_Transform;
-}
-
-void Camera::Move(const glm::vec3 &v, float val)
-{
-	m_Transform.SetPosition(m_Transform.GetPosition() + v * val);
-}
-
-void Camera::Rotate(const glm::vec3 &v, float radians)
-{
-	m_Transform.SetRotation(m_Transform.GetRotation() * (v * radians));
-}
-
-// TODO/NOTE: We could remove m_Transform entirely and do the math ourselves so we don't need to decompose and recompose
-void Camera::LookAt(const glm::vec3 &target, const glm::vec3 &position, const glm::vec3 &up)
-{
-	// Create view matrix
-	const auto viewMat = glm::lookAt(position, target, up);
-
-	// Decompose view matrix
-	glm::vec3 scale(0.0f);
-	glm::quat rotation(0.0f, 0.0f, 0.0f, 0.0f);
-	glm::vec3 translation(0.0f);
-	glm::vec3 skew(0.0f);
-	glm::vec4 perspective(0.0f);
-	glm::decompose(viewMat, scale, rotation, translation, skew, perspective);
-
-	// Update transform
-	m_Transform.SetRotation(rotation);
-	m_Transform.SetPosition(translation);
-	m_Transform.SetScale(scale);
 }
 
 float Camera::GetAspectRatio() const
@@ -125,28 +96,27 @@ void Camera::Update(float deltaTime)
 	m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane, m_FarPlane);
 }
 
-void Camera::Render(Node *node, float deltaTime)
+void Camera::Render(Node *node, float deltaTime, bool clear)
 {
-	// TODO: Test
-	m_ViewMatrix = glm::lookAt(glm::vec3(0.0f), glm::vec3(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	m_ProjectionMatrix = glm::perspective(glm::radians(50.0f), 1920.0f/1080.0f, 0.1f, 100000.0f);
-
-	// Clear buffer
-	if (m_ClearMode != kCameraClearMode_None)
+	if (clear)
 	{
-		if(m_ClearMode & kCameraClearMode_Depth)
+		// Clear buffer
+		if (m_ClearMode != kCameraClearMode_None)
 		{
-			// Set clear depth
-			glClearDepthf(m_ClearDepth);
-		}
-		if (m_ClearMode & kCameraClearMode_Color)
-		{
-			// Set clear color
-			glClearColor(m_ClearColor.r, m_ClearColor.g, m_ClearColor.b, m_ClearColor.a);
-		}
+			if (m_ClearMode & kCameraClearMode_Depth)
+			{
+				// Set clear depth
+				glClearDepthf(m_ClearDepth);
+			}
+			if (m_ClearMode & kCameraClearMode_Color)
+			{
+				// Set clear color
+				glClearColor(m_ClearColor.r, m_ClearColor.g, m_ClearColor.b, m_ClearColor.a);
+			}
 
-		// Clear
-		glClear(m_ClearMode);
+			// Clear
+			glClear(m_ClearMode);
+		}
 	}
 
 	// Create render context
