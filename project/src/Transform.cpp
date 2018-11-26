@@ -19,20 +19,70 @@ void Transform::applyOperation(const Transform *transform, glm::mat4 &matrix, Op
 	}
 }
 
+void applyOperations(const Transform *transform, glm::mat4 &matrix, bool applyScale = true)
+{
+	// Apply rotation
+	matrix *= glm::toMat4(transform->GetRotation());
+
+	// Apply parent's rotation and position
+	if (transform->GetParent() != nullptr)
+		applyOperations(transform->GetParent(), matrix, false);
+	
+	// Apply position
+	matrix = glm::translate(matrix, transform->GetPosition());
+
+	// Apply scale
+	if (applyScale) matrix = glm::scale(matrix, transform->GetScale());
+}
+
 void Transform::update()
 {
-	// Get total position
-	glm::mat4 positionTransform(1.0f);
-	applyOperation(this, positionTransform, kOperation_Position);
+	m_Matrix = glm::mat4(1.0f);
+	applyOperations(this, m_Matrix);
 
+
+	// TODO: we need a recursive method for this...	
+	// Build our rotation
+
+	// Apply parent's rotation and position
+
+	// Apply our position
+
+	// Apply scale
+
+	// OR
+	// get total translations, rotations of parent
+	// do our rotation and translation, then apply the total to ours
+
+	/*
 	// Get total rotation
 	glm::mat4 rotationTransform(1.0f);
 	applyOperation(this, rotationTransform, kOperation_Rotation);
+
+	// Get total position
+	glm::mat4 positionTransform(1.0f);
+	applyOperation(this, positionTransform, kOperation_Position);
 
 	// Build transform matrix
 	m_Matrix = rotationTransform;
 	m_Matrix[3] = positionTransform[3];
 	m_Matrix = glm::scale(m_Matrix, m_Scale);
+	*/
+
+	/*
+	// Get total rotation
+	glm::mat4 rotationTransform(1.0f);
+	applyOperation(this, rotationTransform, kOperation_Rotation);
+
+	// Get total position
+	glm::mat4 positionTransform(1.0f);
+	applyOperation(this, positionTransform, kOperation_Position);
+
+	// Build transform matrix
+	m_Matrix = rotationTransform;
+	m_Matrix[3] = positionTransform[3];
+	m_Matrix = glm::scale(m_Matrix, m_Scale);
+	*/
 }
 
 Transform::Transform(Transform *parent)
@@ -120,13 +170,12 @@ void Transform::LookAt(const glm::vec3 &pos)
 	glm::decompose(viewMat, scale, rotation, translation, skew, perspective);
 
 	// Update transform
-	m_Rotation = rotation;
+	m_Rotation = glm::conjugate(rotation);
 	m_Position = translation;
 	m_Scale = scale;
 	update();
 }
 
-// TODO: We should probably just fix rotation on our camera instead of doing this no?
 glm::vec3 Transform::Up() const
 {
 	return -m_Matrix[1];
@@ -139,7 +188,7 @@ glm::vec3 Transform::Forward() const
 
 glm::vec3 Transform::Right() const
 {
-	return m_Matrix[0];
+	return -m_Matrix[0];
 }
 
 const glm::mat4 &Transform::GetMatrix() const

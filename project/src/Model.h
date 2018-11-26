@@ -11,9 +11,10 @@ class Model : public Node
 {
 	std::vector<Mesh *> m_Meshes; // TODO: Move this to Model::m_Children later
 	std::vector<Material *> m_Materials;
+	bool m_Managed;
 
 public:
-	Model(std::string name, std::vector<Mesh *> meshes, std::vector<Material *> materials);
+	Model(std::string name, std::vector<Mesh *> meshes, std::vector<Material *> materials, bool managed = true);
 	~Model();
 
 	// No copying/moving

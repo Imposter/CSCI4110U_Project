@@ -2,17 +2,20 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
 Camera::Camera(float fov, float near, float far, float aspectRatio, GraphicsManager *graphicsManager)
 	: m_GraphicsManager(graphicsManager), m_FOV(fov), m_NearPlane(near), m_FarPlane(far), m_AspectRatio(aspectRatio), m_ClearColor(0.0f), 
 	m_ClearDepth(1.0f), m_ClearMode(kCameraClearMode_None), m_ProjectionMatrix(0.0f), m_ViewMatrix(0.0f)
 {
-	// Store shaders
-	m_Shaders.push_back(m_GraphicsManager->GetShader("Flat"));
-	m_Shaders.push_back(m_GraphicsManager->GetShader("Lambert"));
 }
 
 Camera::~Camera() = default;
+
+void Camera::AddShader(Shader *shader)
+{
+	m_Shaders.push_back(shader);
+}
 
 const glm::vec4 &Camera::GetClearColor() const
 {
@@ -49,6 +52,36 @@ Transform *Camera::GetTransform()
 	return &m_Transform;
 }
 
+float Camera::GetFOV() const
+{
+	return m_FOV;
+}
+
+void Camera::SetFOV(float fov)
+{
+	m_FOV = fov;
+}
+
+float Camera::GetNearPlane() const
+{
+	return m_NearPlane;
+}
+
+void Camera::SetNearPlane(float near)
+{
+	m_NearPlane = near;
+}
+
+float Camera::GetFarPlane() const
+{
+	return m_FarPlane;
+}
+
+void Camera::SetFarPlane(float far)
+{
+	m_FarPlane = far;
+}
+
 float Camera::GetAspectRatio() const
 {
 	return m_AspectRatio;
@@ -69,22 +102,10 @@ const glm::mat4x4 &Camera::GetViewMatrix() const
 	return m_ViewMatrix;
 }
 
-void Camera::SetModelTransform(Transform *transform)
-{
-	// Update shaders
-	for (const auto &s : m_Shaders)
-	{
-		s->Use();
-		const auto modelVar = s->GetVariable("u_Model");
-
-		// Set transform matrix
-		modelVar->SetMat4(transform->GetMatrix());
-	}
-}
-
 BoundingFrustum Camera::GetBoundingFrustum() const
 {
-	return{ m_Transform.GetMatrix() };
+	// TODO/NOTE: This isn't working for up-down/left-right boundaries
+	return{ m_ViewMatrix + m_ProjectionMatrix };
 }
 
 void Camera::Update(float deltaTime)
@@ -93,7 +114,9 @@ void Camera::Update(float deltaTime)
 	m_ViewMatrix = m_Transform.GetMatrix();
 
 	// Set projection matrix
-	m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane, m_FarPlane);
+	if (m_FarPlane < 0.0f)
+		m_ProjectionMatrix = glm::infinitePerspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane);
+	else m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane, m_FarPlane);
 }
 
 void Camera::Render(Node *node, float deltaTime, bool clear)
@@ -123,6 +146,9 @@ void Camera::Render(Node *node, float deltaTime, bool clear)
 	RenderContext rc{};
 	rc.GraphicsManager = m_GraphicsManager;
 	rc.Camera = this;
+	rc.ViewMatrix = m_ViewMatrix;
+	rc.ProjectionMatrix = m_ProjectionMatrix;
+	rc.TransformMatrix = glm::mat4(0.0f);
 
 	// Update shaders
 	for (const auto &s : m_Shaders)

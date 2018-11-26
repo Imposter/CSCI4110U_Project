@@ -2,21 +2,25 @@
 #include "Camera.h" 
 // TODO: Abstract camera
 
-Model::Model(std::string name, std::vector<Mesh *> meshes, std::vector<Material *> materials)
-	: Node(std::move(name)), m_Meshes(std::move(meshes)), m_Materials(std::move(materials))
+Model::Model(std::string name, std::vector<Mesh *> meshes, std::vector<Material *> materials, bool managed)
+	: Node(std::move(name)), m_Meshes(std::move(meshes)), m_Materials(std::move(materials)), m_Managed(managed)
 {
 }
 
 Model::~Model()
 {
-	// Delete meshes
-	for (auto &m : m_Meshes)
-		Delete(m);
-	m_Meshes.clear();
+	if (m_Managed) 
+	{
+		// Delete meshes
+		for (auto &m : m_Meshes)
+			Delete(m);
 
-	// Delete materials
-	for (auto &m : m_Materials)
-		Delete(m);
+		// Delete materials
+		for (auto &m : m_Materials)
+			Delete(m);
+	}
+
+	m_Meshes.clear();
 	m_Materials.clear();
 }
 
@@ -52,11 +56,17 @@ void Model::Compile()
 
 void Model::Render(RenderContext *context)
 {
-	// Set transform matrix
-	context->Camera->SetModelTransform(&m_Transform);
+	// Check if we're in the bounding frustum of the camera
+	// TODO: Causing issues with camera look at
+	//const auto frustum = context->Camera->GetBoundingFrustum();
+	//if (frustum.Contains(m_Transform.GetPosition()) != kContainmentType_Disjoint)
+	{
+		// Set transform matrix
+		context->TransformMatrix = m_Transform.GetMatrix();
 
-	for (auto &m : m_Meshes)
-		m->Render(context);
+		for (auto &m : m_Meshes)
+			m->Render(context);
+	}
 
 	Node::Render(context);
 }

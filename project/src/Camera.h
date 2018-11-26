@@ -38,6 +38,8 @@ public:
 	Camera(float fov, float near, float far, float aspectRatio, GraphicsManager *graphicsManager);
 	~Camera();
 
+	void AddShader(Shader *shader);
+
 	const glm::vec4 &GetClearColor() const;
 	void SetClearColor(const glm::vec4 &color);
 
@@ -49,13 +51,20 @@ public:
 
 	Transform *GetTransform();
 
+	float GetFOV() const;
+	void SetFOV(float fov);
+
+	float GetNearPlane() const;
+	void SetNearPlane(float near);
+
+	float GetFarPlane() const;
+	void SetFarPlane(float far);
+
 	float GetAspectRatio() const;
 	void SetAspectRatio(float aspectRatio);
 
 	const glm::mat4 &GetProjectionMatrix() const;
 	const glm::mat4 &GetViewMatrix() const;
-	
-	void SetModelTransform(Transform *transform);
 
 	BoundingFrustum GetBoundingFrustum() const;
 

@@ -55,3 +55,40 @@ Texture *GraphicsManager::GetTexture(const std::string &name)
 
 	return texture;
 }
+
+// TODO: Integrate
+void GraphicsManager::UseShader(Shader *shader)
+{
+	if (shader == m_ActiveShader)
+		return;
+
+	m_ActiveShader = shader;
+	shader->Use();
+}
+
+void GraphicsManager::Bind(VertexArray *va)
+{
+	if (va == m_ActiveVertexArray)
+		return;
+
+	m_ActiveVertexArray = va;
+	va->Bind();
+}
+
+void GraphicsManager::Bind(VertexBuffer<void> *vb)
+{
+	if (vb == m_ActiveVertexBuffer)
+		return;
+
+	m_ActiveVertexBuffer = vb;
+	vb->Bind();
+}
+
+void GraphicsManager::Bind(IndexBuffer *ib)
+{
+	if (ib == m_ActiveIndexBuffer)
+		return;
+
+	m_ActiveIndexBuffer = ib;
+	ib->Bind();
+}

@@ -1,0 +1,9 @@
+{
+	"name": "Light",
+	"vertex": [
+		"Light"
+	],
+	"fragment": [
+		"Light"
+	]
+}

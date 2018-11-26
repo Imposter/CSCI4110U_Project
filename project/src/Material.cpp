@@ -222,7 +222,7 @@ unsigned int Material::GetTextureSlot(const std::string &name) const
 }
 
 // Active texture limit is 16/32
-unsigned int Material::SetTexture(const std::string &name, Texture *texture)
+unsigned int Material::SetTexture(const std::string &name, Texture *texture) // TODO: Test
 {
 	// Check if texture with name is already present
 	for (auto &res : m_Resources) // TODO: This should take parameters without "u_Material.*" in them and correct them...
@@ -250,6 +250,17 @@ Shader *Material::GetShader() const
 	return m_Shader;
 }
 
+bool Material::IsVariable(const std::string &name) const
+{
+	for (auto &var : m_Variables)
+	{
+		if (var->GetName() == name)
+			return true;
+	}
+
+	return false;
+}
+
 MaterialVariable *Material::GetVariable(const std::string &name)
 {
 	for (auto &var : m_Variables)
@@ -257,7 +268,7 @@ MaterialVariable *Material::GetVariable(const std::string &name)
 		if (var->GetName() == name)
 			return var;
 	}
-
+	
 	THROW_EXCEPTION(MaterialVariableNotFoundException, "Variable %s not found", name.c_str());
 }
 

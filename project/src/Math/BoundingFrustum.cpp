@@ -8,56 +8,56 @@ void BoundingFrustum::GetPlanesFromMatrix(const glm::mat4x4 &matrix, Plane &near
 
 	// Left plane
 	left.SetNormal({
-		matrix[1][4] + matrix[1][1],
-		matrix[2][4] + matrix[2][1],
-		matrix[3][4] + matrix[3][1]
+		matrix[0][3] + matrix[0][0],
+		matrix[1][3] + matrix[1][0],
+		matrix[2][3] + matrix[2][0]
 	});
-	left.SetDistance(matrix[4][4] + matrix[4][1]);
+	left.SetDistance(matrix[3][3] + matrix[3][0]);
 	left.Normalize();
 
 	// Right plane
 	right.SetNormal({
-		matrix[1][4] - matrix[1][1],
-		matrix[2][4] - matrix[2][1],
-		matrix[3][4] - matrix[3][1]
+		matrix[0][3] - matrix[0][0],
+		matrix[1][3] - matrix[1][0],
+		matrix[2][3] - matrix[2][0]
 	});
-	right.SetDistance(matrix[4][4] - matrix[4][1]);
+	right.SetDistance(matrix[3][3] - matrix[3][0]);
 	right.Normalize();
 
 	// Top plane
 	top.SetNormal({
-		matrix[1][4] - matrix[1][2],
-		matrix[2][4] - matrix[2][2],
-		matrix[3][4] - matrix[3][2]
+		matrix[0][3] - matrix[0][1],
+		matrix[1][3] - matrix[1][1],
+		matrix[2][3] - matrix[2][1]
 	});
-	top.SetDistance(matrix[4][4] - matrix[4][2]);
+	top.SetDistance(matrix[3][3] - matrix[3][1]);
 	top.Normalize();
 
 	// Bottom plane
 	bottom.SetNormal({
-		matrix[1][4] + matrix[1][2],
-		matrix[2][4] + matrix[2][2],
-		matrix[3][4] + matrix[3][2]
+		matrix[0][3] + matrix[0][1],
+		matrix[1][3] + matrix[1][1],
+		matrix[2][3] + matrix[2][1]
 	});
-	bottom.SetDistance(matrix[4][4] + matrix[4][2]);
+	bottom.SetDistance(matrix[3][3] + matrix[3][1]);
 	bottom.Normalize();
 
 	// Near plane
 	near.SetNormal({
-		matrix[1][3],
-		matrix[2][3],
-		matrix[3][3]
+		matrix[0][2],
+		matrix[1][2],
+		matrix[2][2]
 	});
-	near.SetDistance(matrix[4][3]);
+	near.SetDistance(matrix[3][2]);
 	near.Normalize();
 
 	// Far plane
 	far.SetNormal({
-		matrix[1][4] - matrix[1][3],
-		matrix[2][4] - matrix[2][3],
-		matrix[3][4] - matrix[3][3]
+		matrix[0][3] - matrix[0][2],
+		matrix[1][3] - matrix[1][2],
+		matrix[2][3] - matrix[2][2]
 	});
-	far.SetDistance(matrix[4][4] - matrix[4][3]);
+	far.SetDistance(matrix[3][3] - matrix[3][2]);
 	far.Normalize();
 }
 

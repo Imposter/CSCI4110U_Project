@@ -42,7 +42,7 @@ class IMesh : public Node
 	IndexBuffer m_IndexBuffer; // EBO
 
 public:
-	IMesh(std::string name, std::vector<TVertex> vertices, std::vector<unsigned int> indices, Material *material = nullptr)
+	IMesh(std::string name, std::vector<TVertex> vertices, std::vector<unsigned int> indices, Material *material)
 		: Node(name), m_Vertices(std::move(vertices)), m_Indices(std::move(indices)),
 		m_Material(material), m_VertexFormat(), m_VertexArray(m_VertexFormat.GetArray()),
 		m_VertexBuffer(m_VertexArray, m_Vertices.data(), m_Vertices.size()),
@@ -83,12 +83,16 @@ public:
 	void Render(RenderContext *context) override
 	{
 		// Apply material
-		if (m_Material) m_Material->Apply();
+		m_Material->Apply();
 
-		// Bind vertex array
-		m_VertexArray->Bind();
-		m_VertexBuffer.Bind();
-		m_IndexBuffer.Bind();
+		// Apply transform
+		const auto shader = m_Material->GetShader();
+		shader->GetVariable(kShaderVar_Transform)->SetMat4(context->TransformMatrix);
+
+		// Bind arrays
+		context->GraphicsManager->Bind(m_VertexArray);
+		context->GraphicsManager->Bind<TVertex>(&m_VertexBuffer);
+		context->GraphicsManager->Bind(&m_IndexBuffer);
 
 		// Render
 		glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr); // TODO: Move these to graphics manager, along with buffers, etc.

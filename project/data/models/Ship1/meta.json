@@ -2,8 +2,8 @@
 	"name": "Ship1",
 	"extension": "obj",
 	"materialMap": {
-		"BodyMaterial": "Flat",
-		"CockpitMaterial": "Flat",
-		"EngineMaterial": "Flat"
+		"BodyMaterial": "Light",
+		"CockpitMaterial": "Light",
+		"EngineMaterial": "Light"
 	}
 }

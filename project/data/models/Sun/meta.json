@@ -1,0 +1,7 @@
+{
+	"name": "sun",
+	"extension": "gltf",
+	"materialMap": {
+		"Material": "Flat"
+	}
+}

@@ -1,9 +1,0 @@
-{
-	"name": "Projectile1",
-	"extension": "obj",
-	"materialMap": {
-		"BodyMaterial": "Lambert",
-		"NoseMaterial": "Lambert",
-		"EngineMaterial": "Lambert"
-	}
-}

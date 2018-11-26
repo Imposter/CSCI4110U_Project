@@ -1,0 +1,9 @@
+{
+	"name": "FakeSkybox",
+	"vertex": [
+		"FakeSkybox"
+	],
+	"fragment": [
+		"FakeSkybox"
+	]
+}

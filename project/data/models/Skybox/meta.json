@@ -1,0 +1,7 @@
+{
+	"name": "skybox",
+	"extension": "obj",
+	"materialMap": {
+		"SkyboxMaterial": "FakeSkybox"
+	}
+}

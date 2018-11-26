@@ -79,7 +79,6 @@ class Material
 {
 	std::string m_Name;
 	Shader *m_Shader;
-	GraphicsManager *m_GraphicsManager;
 	std::vector<MaterialVariable *> m_Variables;
 	std::vector<MaterialResource *> m_Resources;
 
@@ -102,6 +101,7 @@ public:
 
 	Shader *GetShader() const;
 
+	bool IsVariable(const std::string &name) const;
 	MaterialVariable *GetVariable(const std::string &name);
 	std::vector<MaterialVariable *> GetVariables() const;
 

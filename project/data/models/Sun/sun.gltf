@@ -1,0 +1,186 @@
+{
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5123,
+            "count" : 24192,
+            "max" : [
+                16255
+            ],
+            "min" : [
+                0
+            ],
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 16256,
+            "max" : [
+                0.9999979734420776,
+                1.0,
+                0.9999961853027344
+            ],
+            "min" : [
+                -0.9999979138374329,
+                -1.0,
+                -1.0
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 16256,
+            "max" : [
+                0.9984953999519348,
+                0.9996981620788574,
+                0.99849534034729
+            ],
+            "min" : [
+                -0.99849534034729,
+                -0.9996981024742126,
+                -0.9984953999519348
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 16256,
+            "max" : [
+                0.9157500267028809,
+                0.446323424577713,
+                0.9810999035835266,
+                1.0
+            ],
+            "min" : [
+                -0.9157506227493286,
+                -0.4463222920894623,
+                -0.9811012744903564,
+                1.0
+            ],
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 16256,
+            "max" : [
+                1.3595995903015137,
+                0.9912757873535156
+            ],
+            "min" : [
+                0.000153273344039917,
+                0.008724868297576904
+            ],
+            "type" : "VEC2"
+        }
+    ],
+    "asset" : {
+        "generator" : "Khronos Blender glTF 2.0 exporter",
+        "version" : "2.0"
+    },
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 48384,
+            "byteOffset" : 0,
+            "target" : 34963
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 195072,
+            "byteOffset" : 48384,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 195072,
+            "byteOffset" : 243456,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 260096,
+            "byteOffset" : 438528,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 130048,
+            "byteOffset" : 698624,
+            "target" : 34962
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 828672,
+            "uri" : "sun.bin"
+        }
+    ],
+    "images" : [
+        {
+            "name" : "Sun",
+            "uri" : "Sun.jpg"
+        }
+    ],
+    "materials" : [
+        {
+            "name" : "Material",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.6400000190734865,
+                    0.6400000190734865,
+                    0.6400000190734865,
+                    1.0
+                ],
+                "baseColorTexture" : {
+                    "index" : 0
+                },
+                "metallicFactor" : 0.0
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Sphere",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "NORMAL" : 2,
+                        "POSITION" : 1,
+                        "TANGENT" : 3,
+                        "TEXCOORD_0" : 4
+                    },
+                    "indices" : 0,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Sphere"
+        }
+    ],
+    "samplers" : [
+        {}
+    ],
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "textures" : [
+        {
+            "sampler" : 0,
+            "source" : 0
+        }
+    ]
+}

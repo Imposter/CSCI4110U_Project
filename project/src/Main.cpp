@@ -24,13 +24,13 @@ extern void Project_Render(float time, float deltaTime);
 
 static void Update()
 {
-	const auto time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
-	const auto deltaTime = time - g_LastUpdateTime;
+	const auto time = glutGet(GLUT_ELAPSED_TIME);
+	const auto deltaTime = static_cast<float>(time) - static_cast<float>(g_LastUpdateTime);
 
 	Project_Update(time, deltaTime);
 
 	glutPostRedisplay();
-
+	
 	g_LastUpdateTime = time;
 }
 
@@ -42,8 +42,8 @@ static void WindowClose()
 
 static void WindowRender()
 {
-	const auto time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
-	const auto deltaTime = time - g_LastRenderTime;
+	const auto time = glutGet(GLUT_ELAPSED_TIME);
+	const auto deltaTime = static_cast<float>(time) - static_cast<float>(g_LastUpdateTime);
 
 	Project_Render(time, deltaTime);
 	
@@ -197,10 +197,12 @@ int main(int argc, char **argv)
 #if WIREFRAME
 	// Wireframe mode
 	glPolygonMode(GL_FRONT, GL_LINE);
+#endif
+
+	// Enable culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-#endif
-			
+	
 	// Turn on depth buffering
 	glEnable(GL_DEPTH_TEST);
 

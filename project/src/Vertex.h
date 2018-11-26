@@ -169,6 +169,11 @@ public:
 	{
 		return m_Count;
 	}
+
+	void Bind()
+	{
+		Buffer::Bind();
+	}
 };
 
 template<typename TVertex>

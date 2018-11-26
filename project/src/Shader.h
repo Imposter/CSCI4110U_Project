@@ -15,6 +15,9 @@ DEFINE_EXCEPTION(ShaderVariableTypeMismatchException);
 
 #define SHADER_DEFINE_VARIABLE(name) static const char *kShaderVar_ ## name =  "u_" #name
 
+// Vars
+SHADER_DEFINE_VARIABLE(Transform);
+
 enum ShaderVariableType
 {
 	kShaderVariableType_Unknown,

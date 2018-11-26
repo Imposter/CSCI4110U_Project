@@ -171,7 +171,7 @@ ShaderVariable *Shader::GetVariable(const std::string &name)
 		if (var->GetName() == name)
 			return var;
 	}
-
+	
 	THROW_EXCEPTION(ShaderVariableNotFoundException, "Variable %s not found", name.c_str());
 }
 

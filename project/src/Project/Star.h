@@ -29,4 +29,4 @@ public:
 	void Render(float time, float deltaTime) override;
 };
 
-void GenerateStars(int count, float innerRadius, float outerRadius, float minSize, float maxSize, Shader *matShader, Object *parentObj, Node *parentNode);
+void CreateStarField(int count, float innerRadius, float outerRadius, float minSize, float maxSize, Mesh *mesh, Material *material, Object *parentObj, Node *parentNode);

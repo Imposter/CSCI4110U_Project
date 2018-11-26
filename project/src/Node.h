@@ -11,6 +11,10 @@ struct RenderContext
 {
 	GraphicsManager *GraphicsManager;
 	Camera *Camera;
+
+	glm::mat4 ViewMatrix;
+	glm::mat4 ProjectionMatrix;
+	glm::mat4 TransformMatrix;
 };
 
 DEFINE_EXCEPTION(NodeNotFoundException);
