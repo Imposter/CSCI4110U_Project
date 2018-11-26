@@ -14,16 +14,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// TODO: Remove scaling and whatnot for debugging purposes for the transform
 #define SCALE_FACTOR 10.0f
 #define SCALE_STAR_FACTOR 1.0f
 #define SCALE_PLANET_FACTOR 10.0f
 #define SOLAR_SYSTEM_RADIUS 143730000000.0f // km
-#define SCALE(x) ((x / SOLAR_SYSTEM_RADIUS) * SCALE_FACTOR)
-#define SCALE_STAR(x) (SCALE(x) * SCALE_STAR_FACTOR)
-#define SCALE_PLANET(x) (SCALE(x) * SCALE_PLANET_FACTOR)
+#define SCALE(x) (x)//((x / SOLAR_SYSTEM_RADIUS) * SCALE_FACTOR)
+#define SCALE_STAR(x) (x)//(SCALE(x) * SCALE_STAR_FACTOR)
+#define SCALE_PLANET(x) (x)//(SCALE(x) * SCALE_PLANET_FACTOR)
 
 // Space
-const float SkyboxScale = SCALE(SOLAR_SYSTEM_RADIUS) * 2.0f;
+const float SkyboxScale = SCALE(SOLAR_SYSTEM_RADIUS) * 2.0f;// TODO: Debug anims and add anim player, and nicer lighting
 const glm::vec3 SunPosition(0.0f, 0.0f, 0.0f);
 const float SunScale = SCALE_STAR(695508.0f);
 const float EarthDistance = SCALE(149600000.0f); // From sun
