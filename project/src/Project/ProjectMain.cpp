@@ -7,37 +7,43 @@
 #include "../Object.h"
 #include "UVSphere.h"
 #include "Util.h"
-#include "Animation.h"
-#include "Star.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// TODO: Remove scaling and whatnot for debugging purposes for the transform
-#define SCALE_FACTOR 10.0f
-#define SCALE_STAR_FACTOR 1.0f
-#define SCALE_PLANET_FACTOR 10.0f
-#define SOLAR_SYSTEM_RADIUS 143730000000.0f // km
-#define SCALE(x) (x)//((x / SOLAR_SYSTEM_RADIUS) * SCALE_FACTOR)
-#define SCALE_STAR(x) (x)//(SCALE(x) * SCALE_STAR_FACTOR)
-#define SCALE_PLANET(x) (x)//(SCALE(x) * SCALE_PLANET_FACTOR)
+#define SCALE_FACTOR 1.0f
+#define SCALE_STAR_FACTOR 50.0f
+#define SCALE_PLANET_FACTOR 1000.0f
+#define SCALE_DISTANCE_FACTOR 1.0f
+#define SOLAR_SYSTEM_RADIUS 600000000.0f // km
+#define SCALE(x) ((x / SOLAR_SYSTEM_RADIUS) * SCALE_FACTOR)
+#define SCALE_DISTANCE(x) (SCALE(x) * SCALE_DISTANCE_FACTOR)
+#define SCALE_STAR(x) (SCALE(x) * SCALE_STAR_FACTOR)
+#define SCALE_PLANET(x) (SCALE(x) * SCALE_PLANET_FACTOR)
+
+// Working
+/*#define SCALE_FACTOR_DISTANCE 10.0f
+#define SCALE_FACTOR_OBJECT 50.0f
+#define SOLAR_SYSTEM_RADIUS 600000000.0f
+#define SCALE_DISTANCE(x) ((x / SOLAR_SYSTEM_RADIUS) * SCALE_FACTOR_DISTANCE)
+#define SUN_RADIUS 695508.0f
+#define OBJECT_MAX_RADIUS (SUN_RADIUS * 25000.0f) // km
+#define SCALE_OBJECT(x) SCALE_DISTANCE(x)//#define SCALE_OBJECT(x) ((x / OBJECT_MAX_RADIUS) * SCALE_FACTOR_OBJECT)
+
+#define SCALE_STAR_FACTOR 10.0f
+#define SCALE_PLANET_FACTOR 100.0f
+#define SCALE_STAR(x) (SCALE_OBJECT(x) * SCALE_STAR_FACTOR)
+#define SCALE_PLANET(x) (SCALE_OBJECT(x) * SCALE_PLANET_FACTOR)*/
 
 // Space
-const float SkyboxScale = SCALE(SOLAR_SYSTEM_RADIUS) * 2.0f;// TODO: Debug anims and add anim player, and nicer lighting
+const float SkyboxScale = 5.0f;
 const glm::vec3 SunPosition(0.0f, 0.0f, 0.0f);
 const float SunScale = SCALE_STAR(695508.0f);
-const float EarthDistance = SCALE(149600000.0f); // From sun
-const float EarthScale = SCALE_PLANET(6371.0f) * 250.0f; // TODO: Test lighting
-const float MoonDistance = SCALE(384400.0f) * 250.0f; // From earth
-const float MoonScale = SCALE_PLANET(1737.0f) * 250.0f;
-
-const int StarResolution = 12;
-const int StarCount = 100;
-const float StarInnerRadius = SCALE(250000000.0f);
-const float StarOuterRadius = SCALE(500000000.0f);
-const float StarMinSize = SCALE_STAR(25000.0f);
-const float StarMaxSize = SCALE_STAR(50000.0f);
+const float EarthDistance = SCALE_DISTANCE(149600000.0f); // From sun
+const float EarthScale = SCALE_PLANET(6371.0f);
+const float EarthMoveSpeed = 0.001;
+const float EarthRotateSpeed = 2.0f;
 
 // Constants
 const float CameraFOV = 50.0f;
@@ -45,13 +51,7 @@ const float CameraNearClip = 0.00001f;
 const float CameraFarClip = -1.0f; // Infinity
 const glm::vec4 CameraClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 const float CameraClearDepth = 1.0f;
-const float CameraMoveSensitivity = SCALE(0.1f);
-const float CameraZoomSensitivity = EarthDistance / 100.0f; // TODO: Find out direction -- if we change position to positive earth distance it works...
-const glm::vec3 CameraDefaultPosition(0.0f, EarthDistance * 2.0f, EarthDistance * 2.0f);//-EarthDistance); //const glm::vec3 CameraDefaultPosition(0.0f, EarthDistance * 4.0f, EarthDistance * 4.0f); // negative or positive?
-
-// Ship
-const float ShipScale = SCALE(10.0f); // km
-const glm::vec3 ShipStartPosition(0.0f, 0.0f, 0.0f); // TODO: Set starting position
+const glm::vec3 CameraDefaultPosition(EarthDistance * 1.0f, EarthDistance * 1.0f, -EarthDistance * 1.0f);
 
 // Vars
 unsigned int g_Width;
@@ -74,26 +74,12 @@ Shader *g_LightShader;
 // Lights
 PointLight *g_PointLight;
 
-// Meshes
-Mesh *g_StarMesh;
-
-// Materials
-Material *g_StarMaterial;
-
 // Models
 Model *g_SkyboxModel;
 Model *g_SunModel;
 Model *g_EarthModel;
-Model *g_MoonModel;
-Model *g_ShipModel;
-
-// Animations
-Animation *g_TestAnimation;
 
 // Camera
-unsigned int g_MouseLastX = 0;
-unsigned int g_MouseLastY = 0;
-bool g_EyeMove = false;
 Transform *g_LookTarget;
 
 // For stars
@@ -131,8 +117,10 @@ void CreateScene()
 
 	// Set default camera position
 	const auto cameraTransform = g_Camera->GetTransform();
-	cameraTransform->SetPosition(CameraDefaultPosition);
-	cameraTransform->LookAt(SunPosition);
+	const auto cameraMatrix = glm::lookAt(CameraDefaultPosition, SunPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+	cameraTransform->SetMatrix(cameraMatrix); // TODO: Somehow fix Transform::LookAt
+	//cameraTransform->SetPosition(CameraDefaultPosition);
+	//cameraTransform->LookAt(SunPosition);
 
 	// Add shaders to camera
 	g_Camera->AddShader(g_FlatShader);
@@ -149,14 +137,14 @@ void CreateScene()
 
 	// Create skybox
 	g_SkyboxModel = g_ModelManager->LoadModel("Skybox");
-	//g_RootNode->AddChild(g_SkyboxModel); // TODO: Testing camera look at
+	g_RootNode->AddChild(g_SkyboxModel);
 
 	const auto skyboxTransform = g_SkyboxModel->GetTransform();
 	skyboxTransform->SetScale(glm::vec3(SkyboxScale));
 
 	// Create sun
 	g_SunModel = g_ModelManager->LoadModel("Sun");
-	g_RootNode->AddChild(g_SunModel); // TODO/NOTE: Not rendering on purpose
+	g_RootNode->AddChild(g_SunModel);
 
 	// Set sun transform
 	const auto sunTransform = g_SunModel->GetTransform();
@@ -165,44 +153,11 @@ void CreateScene()
 
 	// Create earth
 	g_EarthModel = g_ModelManager->LoadModel("Earth");
-	//g_RootNode->AddChild(g_EarthModel);
+	g_RootNode->AddChild(g_EarthModel);
 
 	// Set earth transform
 	const auto earthTransform = g_EarthModel->GetTransform();
-	earthTransform->SetParent(sunTransform);
 	earthTransform->SetScale(glm::vec3(EarthScale));
-
-	// Create moon
-	g_MoonModel = g_ModelManager->LoadModel("Moon");
-	//g_RootNode->AddChild(g_MoonModel); // TODO/NOTE: Test
-
-	// Set moon transform
-	const auto moonTransform = g_MoonModel->GetTransform();
-	moonTransform->SetParent(earthTransform);
-	moonTransform->SetScale(glm::vec3(MoonScale));
-
-	// Create star mesh
-	CreateSphereMesh(StarResolution, g_FlatShader, &g_StarMesh, &g_StarMaterial);
-	g_StarMaterial->GetShader()->Use();
-	g_StarMaterial->GetVariable(kMaterialVar_Diffuse)->SetVec3(glm::vec3(0.8f, 0.8f, 0.8f));
-
-	// Generate star field
-	//CreateStarField(StarCount, StarInnerRadius, StarOuterRadius, StarMinSize, StarMaxSize, g_StarMesh, g_StarMaterial, g_RootObject, g_RootNode);
-
-	// Create ship
-	g_ShipModel = g_ModelManager->LoadModel("Ship1");
-	//g_RootNode->AddChild(g_ShipModel); // TODO/NOTE: Update transform
-
-	// Set ship transform
-	const auto shipTransform = g_ShipModel->GetTransform();
-	shipTransform->SetScale(glm::vec3(ShipScale)); // 100 meters -- TODO: Currently very small, we might need to scale it up
-	shipTransform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(180.0f));
-	shipTransform->SetPosition(ShipStartPosition);
-
-	// TODO/NOTE: Testing animations
-	g_TestAnimation = New<Animation>(shipTransform);
-	g_TestAnimation->AddKeyFrame(Animation::KeyFrame(1000.0f, Animation::kAxis_Forward, glm::radians(360.0f), Animation::kAxis_Forward, 10000.0f));
-	g_TestAnimation->AddKeyFrame(Animation::KeyFrame(0.0f, Animation::kAxis_Forward, glm::radians(360.0f), Animation::kAxis_Right, 5000.0f));
 
 	// Set initial look target as sun
 	g_LookTarget = sunTransform;
@@ -213,52 +168,32 @@ void Project_Update(float time, float deltaTime)
 	// Get time in seconds
 	const auto timeSeconds = time / 1000.0f;
 
-	// Orbit == 365 days
-	// Orbit scale factor = 360 / Orbit
-	// Time In Seconds to Orbit = 31536000
+	// Update earth
+	{
+		const auto earthTransform = g_EarthModel->GetTransform();
+		
+		glm::mat4 mat(1.0f);
+		mat = glm::rotate(mat, timeSeconds * EarthRotateSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
+		mat = glm::translate(mat, glm::vec3(EarthDistance * sin(timeSeconds * EarthMoveSpeed), 0.0f, EarthDistance * cos(timeSeconds * EarthMoveSpeed)));
+		mat = glm::scale(mat, glm::vec3(EarthScale));
 
-	// TODO: Add time scale factor for rotating and shit
+		earthTransform->SetMatrix(mat);
 
-	// Rotate sun on its own axis
-	// TODO: ...
+		//earthTransform->SetPosition(glm::vec3(EarthDistance * sin(timeSeconds * EarthMoveSpeed), 0.0f, EarthDistance * cos(timeSeconds * EarthMoveSpeed)));
 
-	// Rotate earth around sun
-	const auto earthTransform = g_EarthModel->GetTransform();
-	earthTransform->SetPosition(glm::vec3(EarthDistance * sin(timeSeconds), 0.0f, EarthDistance * cos(timeSeconds)));
-	
-	// Rotate earth on its own axis
-	earthTransform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), timeSeconds * 2.0f);
+		// Rotate earth on its own axis
+		//earthTransform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), timeSeconds * EarthRotateSpeed);	
+	}
 
-	// Rotate moon around earth
-	const auto moonTransform = g_MoonModel->GetTransform();
-	//moonTransform->SetPosition(glm::vec3(MoonDistance * sin(timeSeconds), 0.0f, MoonDistance * cos(timeSeconds)));
-
-	// Rotate moon on its own axis
-	//moonTransform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), timeSeconds * 2.0f);
-	
-	// Translate ship
-	const auto shipTransform = g_ShipModel->GetTransform();
-	//shipTransform->OffsetRotation(shipTransform->Right(), glm::radians(1.0f));
-	//shipTransform->LookAt(earthTransform->GetPosition());
-	//shipTransform->OffsetPosition(-shipTransform->Forward() * 0.01f);
-
-	// Set camera transform to ship transform with offset
-	const auto cameraTransform = g_Camera->GetTransform();
-	// test
-	//cameraTransform->OffsetPosition(cameraTransform->Right() * SCALE(1000000.0f));
-	cameraTransform->LookAt(g_LookTarget->GetPosition());
-
-
-	// TODO/NOTE: Testing
-	//g_TestAnimation->Update(time);
+	// Set camera transform
+	//const auto cameraTransform = g_Camera->GetTransform();
+	//cameraTransform->LookAt(g_LookTarget->GetPosition());
 
 	// Update objects
 	g_RootObject->Update(time, deltaTime);
 
 	// Update camera
 	g_Camera->Update(deltaTime);
-
-	// ...
 }
 
 void Project_Render(float time, float deltaTime)
@@ -307,48 +242,22 @@ void Project_WindowKeyPress(KeyPressEventArgs &args)
 
 void Project_WindowMouseWheel(MouseEventArgs &args)
 {
-	// Offset camera position
-	const auto transform = g_Camera->GetTransform();
-	transform->OffsetPosition(transform->Forward() * (CameraZoomSensitivity * -args.Delta));//TODO: This shouldn't be negative because our axis are messed up?
+
 }
 
-// TODO/NOTE: This is busted
 void Project_WindowMouseMove(MouseEventArgs &args)
 {
-	if (g_EyeMove)
-	{
-		// Get change in position
-		const auto deltaX = args.X - g_MouseLastX; // X
-		const auto deltaY = args.Y - g_MouseLastY; // Z
-
-		const auto x = static_cast<float>(deltaX) / g_Width;
-		const auto y = static_cast<float>(deltaY) / g_Height;
-
-		// Offset camera position
-		const auto transform = g_Camera->GetTransform();
-		transform->OffsetPosition(transform->Right() * (CameraMoveSensitivity * x));
-		transform->OffsetPosition(transform->Up() * (CameraMoveSensitivity * -y));
-	}
-
-	// Update last mouse position
-	g_MouseLastX = args.X;
-	g_MouseLastY = args.Y;
+	
 }
 
 void Project_WindowMouseDown(MouseEventArgs &args)
 {
-	if (args.Button == kMouseButton_Left)
-		g_EyeMove = true;
+
 }
 
 void Project_WindowMouseUp(MouseEventArgs &args)
 {
-	if (args.Button == kMouseButton_Right)
-	{
-		g_EyeMove = false;
-		g_MouseLastX = 0;
-		g_MouseLastY = 0;
-	}
+
 }
 
 bool Project_Initialize(Window *window)
@@ -417,13 +326,6 @@ bool Project_Initialize(Window *window)
 
 bool Project_Shutdown()
 {
-	// TODO/NOTE: Testing
-	Delete(g_TestAnimation);
-
-	// Shutdown
-	Delete(g_StarMesh);
-	Delete(g_StarMaterial);
-
 	Delete(g_RootNode);
 	Delete(g_RootObject);
 	Delete(g_Camera);

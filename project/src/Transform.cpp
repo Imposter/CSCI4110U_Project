@@ -19,56 +19,15 @@ void Transform::applyOperation(const Transform *transform, glm::mat4 &matrix, Op
 	}
 }
 
-void applyOperations(const Transform *transform, glm::mat4 &matrix, bool applyScale = true)
-{
-	// Apply rotation
-	matrix *= glm::toMat4(transform->GetRotation());
-
-	// Apply parent's rotation and position
-	if (transform->GetParent() != nullptr)
-		applyOperations(transform->GetParent(), matrix, false);
-	
-	// Apply position
-	matrix = glm::translate(matrix, transform->GetPosition());
-
-	// Apply scale
-	if (applyScale) matrix = glm::scale(matrix, transform->GetScale());
-}
-
 void Transform::update()
 {
+	// Use basic transformations
 	m_Matrix = glm::mat4(1.0f);
-	applyOperations(this, m_Matrix);
-
-
-	// TODO: we need a recursive method for this...	
-	// Build our rotation
-
-	// Apply parent's rotation and position
-
-	// Apply our position
-
-	// Apply scale
-
-	// OR
-	// get total translations, rotations of parent
-	// do our rotation and translation, then apply the total to ours
-
-	/*
-	// Get total rotation
-	glm::mat4 rotationTransform(1.0f);
-	applyOperation(this, rotationTransform, kOperation_Rotation);
-
-	// Get total position
-	glm::mat4 positionTransform(1.0f);
-	applyOperation(this, positionTransform, kOperation_Position);
-
-	// Build transform matrix
-	m_Matrix = rotationTransform;
-	m_Matrix[3] = positionTransform[3];
+	m_Matrix = m_Matrix * glm::toMat4(m_Rotation);
+	m_Matrix = m_Matrix * glm::translate(glm::mat4(1.0f), m_Position);
 	m_Matrix = glm::scale(m_Matrix, m_Scale);
-	*/
 
+	// Avoid heirarchical transformations
 	/*
 	// Get total rotation
 	glm::mat4 rotationTransform(1.0f);
@@ -161,18 +120,8 @@ void Transform::LookAt(const glm::vec3 &pos)
 	// Create view matrix
 	const auto viewMat = glm::lookAt(m_Position, pos, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	// Decompose view matrix
-	glm::vec3 scale(0.0f);
-	glm::quat rotation(0.0f, 0.0f, 0.0f, 0.0f);
-	glm::vec3 translation(0.0f);
-	glm::vec3 skew(0.0f);
-	glm::vec4 perspective(0.0f);
-	glm::decompose(viewMat, scale, rotation, translation, skew, perspective);
-
 	// Update transform
-	m_Rotation = glm::conjugate(rotation);
-	m_Position = translation;
-	m_Scale = scale;
+	m_Rotation = glm::toQuat(viewMat);
 	update();
 }
 
@@ -194,4 +143,9 @@ glm::vec3 Transform::Right() const
 const glm::mat4 &Transform::GetMatrix() const
 {
 	return m_Matrix;
+}
+
+void Transform::SetMatrix(const glm::mat4 &mat)
+{
+	m_Matrix = mat;
 }

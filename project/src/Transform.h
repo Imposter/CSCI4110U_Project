@@ -48,4 +48,6 @@ public:
 	glm::vec3 Right() const;
 
 	const glm::mat4 &GetMatrix() const;
+	void SetMatrix(const glm::mat4 &mat);
+
 };
