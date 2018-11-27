@@ -102,12 +102,6 @@ const glm::mat4x4 &Camera::GetViewMatrix() const
 	return m_ViewMatrix;
 }
 
-BoundingFrustum Camera::GetBoundingFrustum() const
-{
-	// TODO/NOTE: This isn't working for up-down/left-right boundaries
-	return{ m_ViewMatrix + m_ProjectionMatrix };
-}
-
 void Camera::Update(float deltaTime)
 {
 	// Set view matrix from transform

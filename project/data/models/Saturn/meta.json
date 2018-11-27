@@ -1,0 +1,8 @@
+{
+	"name": "Saturn",
+	"extension": "obj",
+	"materialMap": {
+		"Material": "Light",
+		"MaterialRings": "Light"
+	}
+}

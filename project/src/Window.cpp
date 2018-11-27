@@ -283,7 +283,7 @@ void Window::onKeySpecialUp(int key, int x, int y)
 void Window::initWindow()
 {
 	// Set window display mode
-	unsigned int displayMode = GLUT_RGBA;
+	unsigned int displayMode = GLUT_RGBA | GLUT_MULTISAMPLE;
 	if (m_DoubleBuffered) displayMode |= GLUT_DOUBLE;
 	glutInitDisplayMode(displayMode);
 

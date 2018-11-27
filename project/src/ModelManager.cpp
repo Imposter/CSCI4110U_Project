@@ -196,7 +196,7 @@ Model *ModelManager::loadFromFile(const std::string &name)
 	// Read texture meta data
 	const auto metaLines = File::ReadAllLines(m_DataPath + "/" + name + "/meta.json");
 	const auto metaSource = String::Join(metaLines, "\n");
-
+	
 	rapidjson::Document meta;
 	meta.Parse(metaSource.c_str());
 	if (meta.HasParseError())

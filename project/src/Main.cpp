@@ -10,6 +10,7 @@
 #define HEIGHT 600
 #define FULLSCREEN false
 #define WIREFRAME false
+#define MULTISAMPLE 8
 
 // Vars
 Window *g_Window;
@@ -159,6 +160,11 @@ int main(int argc, char **argv)
 	// Set glut window shutdown behaviour
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
+#ifdef MULTISAMPLE
+	// Enable multisampling
+	glutSetOption(GLUT_MULTISAMPLE, MULTISAMPLE);
+#endif
+
 	// Window config
 	const auto width = FULLSCREEN ? glutGet(GLUT_SCREEN_WIDTH) : WIDTH;
 	const auto height = FULLSCREEN ? glutGet(GLUT_SCREEN_HEIGHT) : HEIGHT;
@@ -197,6 +203,10 @@ int main(int argc, char **argv)
 #if WIREFRAME
 	// Wireframe mode
 	glPolygonMode(GL_FRONT, GL_LINE);
+#endif
+
+#ifdef MULTISAMPLE
+	glEnable(GL_MULTISAMPLE);
 #endif
 
 	// Enable culling

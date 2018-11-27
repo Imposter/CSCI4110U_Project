@@ -73,7 +73,7 @@ void ProcessDirectionalLight(in int index, in vec3 normal, in vec3 viewDirection
 	diffuse += d * u_DirectionalLights[index].Diffuse * u_DirectionalLights[index].Intensity;
 
 	// Specular
-	vec3 reflectDirection = reflect(lightDirection, normal);
+	vec3 reflectDirection = reflect(-lightDirection, normal);
     float s = pow(max(0.0f, dot(viewDirection, reflectDirection)), u_Material.Shininess);
 	specular += s * u_DirectionalLights[index].Specular * u_DirectionalLights[index].Intensity;
 }
@@ -92,7 +92,7 @@ void ProcessPointLight(in int index, in vec3 normal, in vec3 viewDirection, inou
 	diffuse += d * u_PointLights[index].Diffuse * u_PointLights[index].Intensity;
 
 	// Specular
-	vec3 reflectDirection = reflect(lightDirection, normal);
+	vec3 reflectDirection = reflect(-lightDirection, normal);
     float s = pow(max(0.0f, dot(viewDirection, reflectDirection)), u_Material.Shininess);
 	specular += s * u_PointLights[index].Specular * u_PointLights[index].Intensity;
 }

@@ -37,7 +37,7 @@ void CreateStarField(int count, float innerRadius, float outerRadius, float minS
 		if (RandomInt(0, 2) == 0) posY *= -1.0f;
 		if (RandomInt(0, 2) == 0) posZ *= -1.0f;
 
-		const glm::vec3 pos(posX, posY, posZ);
+		const glm::vec3 pos(posX * sin(posX), posY, posZ * cos(posZ)); // TODO: If it doesn't work, revert
 
 		// Create random scale rate
 		const auto scaleRate = RandomFloat(0.25, 0.75);

@@ -1,0 +1,7 @@
+{
+	"name": "mercury",
+	"extension": "obj",
+	"materialMap": {
+		"Material": "Light"
+	}
+}

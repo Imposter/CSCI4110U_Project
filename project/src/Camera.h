@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Transform.h"
-#include "Math/BoundingFrustum.h"
 #include "Node.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -65,8 +64,6 @@ public:
 
 	const glm::mat4 &GetProjectionMatrix() const;
 	const glm::mat4 &GetViewMatrix() const;
-
-	BoundingFrustum GetBoundingFrustum() const;
 
 	void Update(float deltaTime);
 	void Render(Node *node, float deltaTime, bool clear = true);

@@ -1,0 +1,7 @@
+{
+	"name": "mars",
+	"extension": "obj",
+	"materialMap": {
+		"Material": "Light"
+	}
+}

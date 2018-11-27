@@ -19,16 +19,53 @@ void Transform::applyOperation(const Transform *transform, glm::mat4 &matrix, Op
 	}
 }
 
+void AccumulateTransforms(const Transform *transform, glm::mat4 &m)
+{
+	if (transform == nullptr)
+		return;
+
+	AccumulateTransforms(transform->GetParent(), m);
+
+	glm::mat4 matrix(1.0f);
+	matrix = glm::scale(matrix, transform->GetScale());
+	matrix = matrix * glm::toMat4(transform->GetRotation());
+	matrix = glm::translate(matrix, transform->GetPosition());
+
+	m = m * matrix;
+}
+
 void Transform::update()
 {
 	// Use basic transformations
 	m_Matrix = glm::mat4(1.0f);
-	m_Matrix = m_Matrix * glm::toMat4(m_Rotation);
-	m_Matrix = m_Matrix * glm::translate(glm::mat4(1.0f), m_Position);
-	m_Matrix = glm::scale(m_Matrix, m_Scale);
 
-	// Avoid heirarchical transformations
+	//m_Matrix = m_Matrix * glm::toMat4(m_Rotation);
+	//m_Matrix = m_Matrix * glm::translate(glm::mat4(1.0f), m_Position);
+	//m_Matrix = glm::scale(m_Matrix, m_Scale);
+
+	//m_Matrix = glm::scale(m_Matrix, m_Scale);
+	//m_Matrix = m_Matrix * glm::toMat4(m_Rotation);
+	//m_Matrix = m_Matrix * glm::translate(glm::mat4(1.0f), m_Position);
+	
+	// correct order
+	//m_Matrix = glm::scale(m_Matrix, m_Scale);
+	//m_Matrix = m_Matrix * glm::toMat4(m_Rotation);
+	//m_Matrix = glm::translate(m_Matrix, m_Position);
+
 	/*
+	// Get translations
+	glm::mat4 transforms(1.0f);
+	AccumulateTransforms(GetParent(), transforms);
+
+	// Decompose total matrix
+	const auto translation = glm::vec3(transforms[3]);
+
+	m_Matrix = glm::scale(m_Matrix, m_Scale);
+	m_Matrix = m_Matrix * glm::toMat4(m_Rotation);
+	m_Matrix = glm::translate(m_Matrix, translation);
+	m_Matrix = glm::translate(m_Matrix, m_Position);
+	*/
+
 	// Get total rotation
 	glm::mat4 rotationTransform(1.0f);
 	applyOperation(this, rotationTransform, kOperation_Rotation);
@@ -41,7 +78,6 @@ void Transform::update()
 	m_Matrix = rotationTransform;
 	m_Matrix[3] = positionTransform[3];
 	m_Matrix = glm::scale(m_Matrix, m_Scale);
-	*/
 }
 
 Transform::Transform(Transform *parent)

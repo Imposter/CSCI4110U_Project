@@ -16,6 +16,6 @@ std::vector<std::string> File::ReadAllLines(const std::string &path)
 	std::string line;
 	while (getline(file, line)) 
 		result.push_back(line);
-
+	
 	return result;
 }
