@@ -10,8 +10,8 @@
 #include "Star.h"
 #include "Animation.h"
 
-#define NO_SKYBOX
-#define NO_PLANETS
+//#define NO_SKYBOX
+//#define NO_PLANETS
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
