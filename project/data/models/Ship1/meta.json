@@ -1,9 +1,0 @@
-{
-	"name": "Ship1",
-	"extension": "obj",
-	"materialMap": {
-		"BodyMaterial": "Light",
-		"CockpitMaterial": "Light",
-		"EngineMaterial": "Light"
-	}
-}

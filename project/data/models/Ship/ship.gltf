@@ -1,0 +1,371 @@
+{
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5123,
+            "count" : 98586,
+            "max" : [
+                41143
+            ],
+            "min" : [
+                0
+            ],
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 41144,
+            "max" : [
+                321.92169189453125,
+                179.2368621826172,
+                1043.4337158203125
+            ],
+            "min" : [
+                -321.9219055175781,
+                -172.93434143066406,
+                -897.7587890625
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 41144,
+            "max" : [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min" : [
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 41144,
+            "max" : [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min" : [
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 41144,
+            "max" : [
+                0.9979000091552734,
+                0.9961000001057982
+            ],
+            "min" : [
+                0.0035000001080334187,
+                0.005299985408782959
+            ],
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5123,
+            "count" : 120744,
+            "max" : [
+                36825
+            ],
+            "min" : [
+                0
+            ],
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 6,
+            "componentType" : 5126,
+            "count" : 36826,
+            "max" : [
+                529.392333984375,
+                237.16539001464844,
+                726.762939453125
+            ],
+            "min" : [
+                -529.392333984375,
+                -234.9129180908203,
+                -982.5233764648438
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 7,
+            "componentType" : 5126,
+            "count" : 36826,
+            "max" : [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min" : [
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 8,
+            "componentType" : 5126,
+            "count" : 36826,
+            "max" : [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min" : [
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 9,
+            "componentType" : 5126,
+            "count" : 36826,
+            "max" : [
+                0.9983999729156494,
+                0.9956999998539686
+            ],
+            "min" : [
+                0.002199999988079071,
+                0.0055999755859375
+            ],
+            "type" : "VEC2"
+        }
+    ],
+    "asset" : {
+        "generator" : "Khronos Blender glTF 2.0 exporter",
+        "version" : "2.0"
+    },
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 197172,
+            "byteOffset" : 0,
+            "target" : 34963
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 493728,
+            "byteOffset" : 197172,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 493728,
+            "byteOffset" : 690900,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 658304,
+            "byteOffset" : 1184628,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 329152,
+            "byteOffset" : 1842932,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 241488,
+            "byteOffset" : 2172084,
+            "target" : 34963
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 441912,
+            "byteOffset" : 2413572,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 441912,
+            "byteOffset" : 2855484,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 589216,
+            "byteOffset" : 3297396,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 294608,
+            "byteOffset" : 3886612,
+            "target" : 34962
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 4181220,
+            "uri" : "ship.bin"
+        }
+    ],
+    "images" : [
+        {
+            "name" : "ShipBody",
+            "uri" : "ShipBody.jpg"
+        },
+        {
+            "name" : "ShipWings",
+            "uri" : "ShipWings.jpg"
+        }
+    ],
+    "materials" : [
+        {
+            "alphaMode" : "BLEND",
+            "name" : "ShipBody",
+            "occlusionTexture" : {
+                "index" : 0
+            },
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 0
+                },
+                "metallicFactor" : 0.0
+            }
+        },
+        {
+            "alphaMode" : "BLEND",
+            "name" : "ShipWings",
+            "occlusionTexture" : {
+                "index" : 2
+            },
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 2
+                },
+                "metallicFactor" : 0.0
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Fighter_Ship_body",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "NORMAL" : 2,
+                        "POSITION" : 1,
+                        "TANGENT" : 3,
+                        "TEXCOORD_0" : 4
+                    },
+                    "indices" : 0,
+                    "material" : 0
+                }
+            ]
+        },
+        {
+            "name" : "Fighter_Ship_wings",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "NORMAL" : 7,
+                        "POSITION" : 6,
+                        "TANGENT" : 8,
+                        "TEXCOORD_0" : 9
+                    },
+                    "indices" : 5,
+                    "material" : 1
+                }
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "ShipBody",
+            "rotation" : [
+                4.0133929246621847e-07,
+                1.6292079862978426e-07,
+                2.821299176503089e-07,
+                1.0
+            ],
+            "scale" : [
+                0.0016278070397675037,
+                0.0016278070397675037,
+                0.0016278070397675037
+            ]
+        },
+        {
+            "mesh" : 1,
+            "name" : "ShipWings",
+            "rotation" : [
+                4.0133929246621847e-07,
+                1.6292079862978426e-07,
+                2.821299176503089e-07,
+                1.0
+            ],
+            "scale" : [
+                0.0016278070397675037,
+                0.0016278070397675037,
+                0.0016278070397675037
+            ]
+        },
+        {
+            "name" : "Sun",
+            "rotation" : [
+                -0.7071068286895752,
+                -8.429370268459024e-08,
+                3.146983544866089e-07,
+                0.7071068286895752
+            ]
+        }
+    ],
+    "samplers" : [
+        {}
+    ],
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                2,
+                1,
+                0
+            ]
+        }
+    ],
+    "textures" : [
+        {
+            "sampler" : 0,
+            "source" : 0
+        },
+        {
+            "sampler" : 0,
+            "source" : 0
+        },
+        {
+            "sampler" : 0,
+            "source" : 1
+        },
+        {
+            "sampler" : 0,
+            "source" : 1
+        }
+    ]
+}

@@ -10,7 +10,7 @@ Shader *LoadShaderFromFile(const std::string &path, const std::string &name)
 	const auto metaSource = String::Join(metaLines, "\n");
 
 	rapidjson::Document meta;
-	meta.Parse(metaSource.c_str());
+	meta.Parse<rapidjson::kParseCommentsFlag>(metaSource.c_str());
 	if (meta.HasParseError())
 		THROW_EXCEPTION(InvalidShaderException, "Meta data parse error: %d", meta.GetParseError());
 

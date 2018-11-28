@@ -1,4 +1,5 @@
 #include "Animation.h"
+#include "../Memory.h"
 
 Animation::KeyFrame::KeyFrame(float t, Axis tAxis, float r, Axis rAxis, float duration)
 	: Translation(t), TranslationAxis(tAxis), Rotation(r), RotationAxis(rAxis), Duration(duration)
@@ -6,13 +7,18 @@ Animation::KeyFrame::KeyFrame(float t, Axis tAxis, float r, Axis rAxis, float du
 }
 
 Animation::Animation(Transform *transform)
-	: m_Transform(transform), m_Started(false), m_Animating(true), m_CurrentFrame(0), m_LastFrameTime(0.0f), m_LastTime(0.0f)
+	: m_Original(*transform), m_Transform(transform), m_Started(false), m_Animating(true), m_CurrentFrame(0), m_LastFrameTime(0.0f), m_LastTime(0.0f)
 {
 }
 
 Transform *Animation::GetTransform() const
 {
 	return m_Transform;
+}
+
+Transform *Animation::GetOriginalTransform()
+{
+	return &m_Original;
 }
 
 bool Animation::IsStarted() const
@@ -32,6 +38,11 @@ void Animation::AddKeyFrame(const KeyFrame &frame)
 
 void Animation::Reset(float time)
 {
+	// Restore properties of transform to before we started animating them
+	m_Transform->SetScale(m_Original.GetScale());
+	m_Transform->SetRotation(m_Original.GetRotation());
+	m_Transform->SetPosition(m_Original.GetPosition());
+
 	m_Started = false;
 	m_Animating = true;
 	m_CurrentFrame = 0;
@@ -72,8 +83,8 @@ void Animation::Update(float time)
 
 	// Offset rotation
 	glm::vec3 rotationAxis(0.0f);
-	switch (frame.RotationAxis) 
-	{ 
+	switch (frame.RotationAxis)
+	{
 	case kAxis_Forward:
 		rotationAxis = m_Transform->Forward();
 		break;
@@ -127,4 +138,127 @@ void Animation::Update(float time)
 	m_Transform->OffsetPosition(glm::normalize(translationAxis) * frame.Translation * p);
 
 	m_LastTime = deltaTime;
+}
+
+AnimationContainer::AnimationContainer(bool simultaneous)
+	: m_Simultaneous(simultaneous), m_Index(0), m_Animating(true)
+{
+}
+
+AnimationContainer::~AnimationContainer()
+{
+	for (auto anim : m_Animations)
+		Delete(anim);
+	m_Animations.clear();
+}
+
+bool AnimationContainer::IsSimultaneous() const
+{
+	return m_Simultaneous;
+}
+
+void AnimationContainer::SetSimultaneous(bool simultaneous)
+{
+	m_Simultaneous = simultaneous;
+}
+
+bool AnimationContainer::IsAnimating() const
+{
+	return m_Animating;
+}
+
+void AnimationContainer::AddAnimation(Animation *animation)
+{
+	m_Animations.push_back(animation);
+}
+
+void AnimationContainer::Reset(float time)
+{
+	// Reset animations in reverse order
+	for (auto it = m_Animations.rbegin(); it != m_Animations.rend(); ++it)
+	{
+		const auto anim = *it;
+		anim->Reset(time);
+	}
+
+	m_Index = 0;
+	m_Animating = true;
+}
+
+void AnimationContainer::Update(float time)
+{
+	// Check if animating
+	if (!m_Animating) return;
+
+	// Update animations
+	auto startIndex = m_Index;
+	auto endIndex = m_Index;
+	if (m_Simultaneous)
+	{
+		startIndex = 0;
+		endIndex = m_Animations.size() - 1;
+	}
+
+	for (auto i = startIndex; i <= endIndex; i++)
+	{
+		const auto anim = m_Animations[i];
+		anim->Update(time);
+	}
+
+	if (!m_Simultaneous)
+	{
+		const auto anim = m_Animations[m_Index];
+		if (!anim->IsAnimating()) m_Index++;
+		if (m_Index > m_Animations.size() - 1)
+			m_Animating = false;
+	}
+}
+
+AnimationPlayer::AnimationPlayer()
+	: m_Index(0), m_Animating(true)
+{
+}
+
+AnimationPlayer::~AnimationPlayer()
+{
+	for (auto container : m_Containers)
+		Delete(container);
+	m_Containers.clear();
+}
+
+bool AnimationPlayer::IsAnimating() const
+{
+	return m_Animating;
+}
+
+void AnimationPlayer::AddContainer(AnimationContainer *container)
+{
+	m_Containers.push_back(container);
+}
+
+void AnimationPlayer::Update(float time)
+{
+	if (!m_Animating) return;
+
+	const auto container = m_Containers[m_Index];
+	container->Update(time);
+
+	if (!container->IsAnimating())
+	{
+		if (++m_Index > m_Containers.size() - 1)
+			m_Animating = false;
+	}
+}
+
+void AnimationPlayer::Reset(float time)
+{
+	// Reset all containers in reverse order
+	for (auto it = m_Containers.rbegin(); it != m_Containers.rend(); ++it)
+	{
+		const auto container = *it;
+		container->Reset(time);
+	}
+
+	m_Index = 0;
+	m_Animating = true;
 }

@@ -7,6 +7,7 @@ void ModelManager::loadTexture(Material *material, const std::string &path, cons
 {
 	// Load texture
 	auto name = path.substr(path.find_last_of('/') + 1);
+	name = name.substr(name.find_last_of('\\') + 1);
 	name = name.substr(0, name.find_last_of('.'));
 	const auto texture = m_GraphicsManager->GetTexture(name);
 
@@ -198,7 +199,7 @@ Model *ModelManager::loadFromFile(const std::string &name)
 	const auto metaSource = String::Join(metaLines, "\n");
 	
 	rapidjson::Document meta;
-	meta.Parse(metaSource.c_str());
+	meta.Parse<rapidjson::kParseCommentsFlag>(metaSource.c_str());
 	if (meta.HasParseError())
 		THROW_EXCEPTION(InvalidModelException, "Meta data parse error: %d", meta.GetParseError());
 
