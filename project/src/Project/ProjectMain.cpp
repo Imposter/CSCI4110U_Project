@@ -233,11 +233,6 @@ void CreateScene()
 	g_SunLight->SetIntensity(1.0f);
 	g_SunLight->SetPosition(SunPosition);
 
-	// Create end of world animation
-	{
-		//g_AnimationEndOfWorld
-	}
-
 	LOG_TRACE("Sim", "Sun loaded");
 
 #ifndef NO_PLANETS
