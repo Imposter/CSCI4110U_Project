@@ -19,13 +19,16 @@ The following project was created by Eyaz Rehman and Rameet Sekhon. We decided t
 - Entire backend coded from scratch, none of in class labs or projects were used
 
 ## Compiling
-This works for Windows Only.
+NOTE: This works for Windows Only.
 - Clone repository
 - Ensure submodules are initialized by entering the following commands in the cloned repository:
     - `git submodule init`
     - `git submodule update`
 - Use `generate_projects.bat` to generate the Visual Studio 2017 solution. 
-- Open `build/CSCI4110U Project.sln` and build the solution for Debug/Release (Win32).
+- Open `build/CSCI4110U Project.sln` and select configuration for Debug/Release (Win32).
+- Set `Project` as the Startup Project
+- Go in to properties for `Project` > `Debugging` and set `Working Directory` to `$(TargetDir)`
+- Build and start the program (to debug!)
 
 ## Running
 - Change directory to `build/bin/<configuration>/`
