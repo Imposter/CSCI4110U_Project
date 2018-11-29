@@ -11,7 +11,6 @@ const std::string &MaterialVariable::GetName() const
 	return m_ShaderVariable->GetName();
 }
 
-// TODO: Move caching to ShaderVariable
 void MaterialVariable::SetBool(bool v)
 {
 	m_Value[0].x = static_cast<float>(v);
@@ -222,10 +221,10 @@ unsigned int Material::GetTextureSlot(const std::string &name) const
 }
 
 // Active texture limit is 16/32
-unsigned int Material::SetTexture(const std::string &name, Texture *texture) // TODO: Test
+unsigned int Material::SetTexture(const std::string &name, Texture *texture)
 {
 	// Check if texture with name is already present
-	for (auto &res : m_Resources) // TODO: This should take parameters without "u_Material.*" in them and correct them...
+	for (auto &res : m_Resources)
 	{
 		if (res->GetName() == name)
 		{

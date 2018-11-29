@@ -25,7 +25,12 @@
 const float SkyboxScale = 5000.0f;
 #endif
 const glm::vec3 SunPosition(0.0f, 0.0f, 0.0f);
-const float SunScale = 10.0f;
+const float SunMinScale = 10.0f;
+const float SunMaxScale = 10.025f;
+const float SunScaleSpeed = 0.5f;
+const float SunMinBrightness = 0.5f;
+const float SunMaxBrightness = 1.2f;
+const float SunBrightnessSpeed = 0.5f;
 #ifndef NO_PLANETS
 const float MercuryDistance = GET_DISTANCE(0.1f); // From sun
 const float MercuryScale = 0.5f;
@@ -54,9 +59,9 @@ const float NeptuneSpeed = 0.075f;
 #endif
 
 const int StarResolution = 12;
-const int StarCount = 100;
-const float StarInnerRadius = SOLAR_SYSTEM_RADIUS * 1.00f;
-const float StarOuterRadius = SOLAR_SYSTEM_RADIUS * 1.25f;
+const int StarCount = 500;
+const float StarInnerRadius = SOLAR_SYSTEM_RADIUS * 1.5f;
+const float StarOuterRadius = SOLAR_SYSTEM_RADIUS * 2.5f;
 const float StarMinSize = 0.5f;
 const float StarMaxSize = 2.0f;
 
@@ -74,7 +79,8 @@ const float CameraSpeed = 0.5f;
 
 // Ship
 const float ShipScale = 0.0025f;
-const float ShipStartPosition = GET_DISTANCE(1.0f);
+const float ShipStartDistance = GET_DISTANCE(1.0f);
+const float ShipStartHeight = GET_DISTANCE(0.25f);
 
 // Vars
 unsigned int g_Width;
@@ -116,7 +122,10 @@ Model *g_SaturnModel;
 Model *g_UranusModel;
 Model *g_NeptuneModel;
 #endif
-Model *g_ShipModel;
+Model *g_ShipModel1;
+Model *g_ShipModel2;
+Model *g_ShipModel3;
+Model *g_ShipModel4;
 
 // Stars
 Mesh *g_StarMesh;
@@ -127,6 +136,10 @@ int g_LookTarget;
 bool g_CameraRotating;
 float g_CameraRotation;
 float g_CameraZoom = CameraZoomDefault;
+
+// Sun
+float g_SunScale;
+float g_SunBrightness;
 
 // Orbits and rotation
 #ifndef NO_PLANETS
@@ -141,7 +154,10 @@ float g_NeptuneRotation;
 #endif
 
 // Animations
-AnimationPlayer *g_AnimationPlayer;
+Animation *g_AnimationShip1;
+Animation *g_AnimationShip2;
+Animation *g_AnimationShip3;
+Animation *g_AnimationShip4;
 
 // For stars
 void CreateSphereMesh(int resolution, Shader *matShader, Mesh **outMesh, Material **outMaterial)
@@ -201,16 +217,26 @@ void CreateScene()
 
 	// Set transform
 	const auto sunTransform = g_SunModel->GetTransform();
-	sunTransform->SetScale(glm::vec3(SunScale));
-	sunTransform->SetPosition(SunPosition);	
+	sunTransform->SetScale(glm::vec3(SunMinScale));
+	sunTransform->SetPosition(SunPosition);
+
+	// Get sun material
+	const auto sunMaterial = g_SunModel->GetMaterial("Material");
+	const auto sunDiffuse = sunMaterial->GetVariable("u_Material.Diffuse");
+	sunDiffuse->SetVec3(glm::vec3(SunMinBrightness));
 
 	// Create point light (at sun)
 	g_SunLight = g_LightManager->CreateLight<PointLight>();
 	g_SunLight->SetAmbient(glm::vec3(0.5f));
-	g_SunLight->SetDiffuse(glm::vec3(0.8f));
+	g_SunLight->SetDiffuse(glm::vec3(SunMinBrightness));
 	g_SunLight->SetSpecular(glm::vec3(0.5f));
 	g_SunLight->SetIntensity(1.0f);
 	g_SunLight->SetPosition(SunPosition);
+
+	// Create end of world animation
+	{
+		//g_AnimationEndOfWorld
+	}
 
 	LOG_TRACE("Sim", "Sun loaded");
 
@@ -312,37 +338,63 @@ void CreateScene()
 	LOG_TRACE("Sim", "Neptune loaded");
 #endif
 
-	// Create ship
-	g_ShipModel = g_ModelManager->LoadModel("Ship");
-	g_Models.push_back(g_ShipModel);
-	g_RootNode->AddChild(g_ShipModel);
+	// Create ship 1
+	g_ShipModel1 = g_ModelManager->LoadModel("Ship");
+	g_Models.push_back(g_ShipModel1);
+	g_RootNode->AddChild(g_ShipModel1);
 
 	// Set transform
-	const auto shipTransform = g_ShipModel->GetTransform();
-	shipTransform->SetPosition(glm::vec3(0.0f, 0.0f, -ShipStartPosition));
-	shipTransform->SetScale(glm::vec3(ShipScale));
+	const auto ship1Transform = g_ShipModel1->GetTransform();
+	ship1Transform->SetPosition(glm::vec3(0.0f, ShipStartHeight, -ShipStartDistance));
+	ship1Transform->SetScale(glm::vec3(ShipScale));
 
-	// Initialize animations
-	g_AnimationPlayer = New<AnimationPlayer>();
+	// Create ship 2
+	g_ShipModel2 = g_ModelManager->LoadModel("Ship");
+	g_Models.push_back(g_ShipModel2);
+	g_RootNode->AddChild(g_ShipModel2);
 
-	// Create animation group 1 -> Move ship forward toward center of solar system, while simultaneously rotating right
-	{
-		// Create container
-		const auto container = New<AnimationContainer>();
+	// Set transform
+	const auto ship2Transform = g_ShipModel2->GetTransform();
+	ship2Transform->SetPosition(glm::vec3(0.0f, ShipStartHeight, ShipStartDistance));
+	ship2Transform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(180.0f));
+	ship2Transform->SetScale(glm::vec3(ShipScale));
 
-		// Create animations
-		const auto a1 = New<Animation>(shipTransform);
-		a1->AddKeyFrame(Animation::KeyFrame(GET_DISTANCE(1.0f), Animation::kAxis_Backward, glm::radians(360.0f), Animation::kAxis_Forward, 10000.0f));
+	// Create ship 3
+	g_ShipModel3 = g_ModelManager->LoadModel("Ship");
+	g_Models.push_back(g_ShipModel3);
+	g_RootNode->AddChild(g_ShipModel3);
 
-		// Store animations in container
-		container->AddAnimation(a1);
+	// Set transform
+	const auto ship3Transform = g_ShipModel3->GetTransform();
+	ship3Transform->SetPosition(glm::vec3(ShipStartDistance, ShipStartHeight, 0.0f));
+	ship3Transform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-90.0f));
+	ship3Transform->SetScale(glm::vec3(ShipScale));
 
-		// Add container to player
-		g_AnimationPlayer->AddContainer(container);
-	}
+	// Create ship 4
+	g_ShipModel4 = g_ModelManager->LoadModel("Ship");
+	g_Models.push_back(g_ShipModel4);
+	g_RootNode->AddChild(g_ShipModel4);
+
+	// Set transform
+	const auto ship4Transform = g_ShipModel4->GetTransform();
+	ship4Transform->SetPosition(glm::vec3(-ShipStartDistance, ShipStartHeight, 0.0f));
+	ship4Transform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
+	ship4Transform->SetScale(glm::vec3(ShipScale));
+
+	// Create animations
+	g_AnimationShip1 = New<Animation>(ship1Transform);
+	g_AnimationShip2 = New<Animation>(ship2Transform);
+	g_AnimationShip3 = New<Animation>(ship3Transform);
+	g_AnimationShip4 = New<Animation>(ship4Transform);
+
+	// Add key frames
+	g_AnimationShip1->AddKeyFrame(Animation::KeyFrame(GET_DISTANCE(1.0f), Animation::kAxis_Backward, glm::radians(360.0f), Animation::kAxis_Forward, 1000.0f));
+	g_AnimationShip2->AddKeyFrame(Animation::KeyFrame(GET_DISTANCE(1.0f), Animation::kAxis_Backward, glm::radians(720.0f), Animation::kAxis_Right, 10000.0f));
+	g_AnimationShip3->AddKeyFrame(Animation::KeyFrame(GET_DISTANCE(1.0f), Animation::kAxis_Backward, glm::radians(1080.0f), Animation::kAxis_Up, 10000.0f));
+	g_AnimationShip4->AddKeyFrame(Animation::KeyFrame(GET_DISTANCE(1.0f), Animation::kAxis_Backward, glm::radians(-360.0f), Animation::kAxis_Up, 10000.0f));
 
 	LOG_TRACE("Sim", "Ship loaded");
-	
+
 	// Create star mesh
 	CreateSphereMesh(StarResolution, g_FlatShader, &g_StarMesh, &g_StarMaterial);
 	g_StarMaterial->GetShader()->Use();
@@ -368,11 +420,31 @@ void Project_Update(float time, float deltaTime)
 
 	// Update sun
 	{
+		// Update scale
+		g_SunScale += SunScaleSpeed * deltaTimeSeconds;
+
+		// Update brightness
+		g_SunBrightness += SunBrightnessSpeed * deltaTimeSeconds;
+
 		// Update transform
 		const auto sunTransform = g_SunModel->GetTransform();
 
+		// Update scale
+		sunTransform->SetScale(glm::vec3(SunMaxScale * abs(sin(g_SunScale)) + SunMinScale * abs(cos(g_SunScale))));
+
 		// Rotate sun on its own axis
 		sunTransform->SetRotation(glm::vec3(0.0f, 1.0f, 0.0f), timeSeconds * 0.1f);
+
+		// Calculate lighting
+		const auto lightDiffuse = SunMaxBrightness * abs(sin(g_SunBrightness)) + SunMinBrightness * abs(cos(g_SunBrightness));
+
+		// Get sun material
+		const auto sunMaterial = g_SunModel->GetMaterial("Material");
+		const auto sunDiffuse = sunMaterial->GetVariable("u_Material.Diffuse");
+		sunDiffuse->SetVec3(glm::vec3(lightDiffuse));
+
+		// Update point light (sunlight)
+		g_SunLight->SetDiffuse(glm::vec3(lightDiffuse));
 	}
 
 #ifndef NO_PLANETS
@@ -458,7 +530,10 @@ void Project_Update(float time, float deltaTime)
 #endif
 
 	// Update animations
-	g_AnimationPlayer->Update(time);
+	g_AnimationShip1->Update(time);
+	g_AnimationShip2->Update(time);
+	g_AnimationShip3->Update(time);
+	g_AnimationShip4->Update(time);
 
 	// Set camera transform
 	const auto targetModel = g_Models[g_LookTarget];
@@ -467,7 +542,7 @@ void Project_Update(float time, float deltaTime)
 
 	if (g_CameraRotating)
 		g_CameraRotation += CameraSpeed * deltaTimeSeconds;
-	
+
 	cameraTransform->SetPosition(targetTransform->GetPosition() + glm::vec3(g_CameraZoom * sin(g_CameraRotation), g_CameraZoom * cos(g_CameraRotation), -g_CameraZoom));
 	const auto cameraMatrix = glm::lookAt(cameraTransform->GetPosition(), targetTransform->GetPosition(), glm::vec3(0.0f, 1.0f, 0.0f));
 	cameraTransform->SetMatrix(cameraMatrix);
@@ -523,11 +598,15 @@ void Project_WindowKeyDown(KeyEventArgs &args)
 	{
 		if (--g_LookTarget < 0)
 			g_LookTarget = g_Models.size() - 1;
+
+		LOG_INFO("Sim", "Current model %u: %s", g_LookTarget, g_Models[g_LookTarget]->GetName().c_str());
 	}
 	else if (args.Value == kKey_Right)
 	{
 		if (++g_LookTarget >= g_Models.size())
 			g_LookTarget = 0;
+
+		LOG_INFO("Sim", "Current model %u: %s", g_LookTarget, g_Models[g_LookTarget]->GetName().c_str());
 	}
 }
 
@@ -536,7 +615,12 @@ void Project_WindowKeyPress(KeyPressEventArgs &args)
 	if (args.Char == 'c')
 		g_CameraRotating = !g_CameraRotating;
 	if (args.Char == 'r')
-		g_AnimationPlayer->Reset(g_LastTime); // TODO: Write instruction for this
+	{
+		g_AnimationShip1->Reset(g_LastTime);
+		g_AnimationShip2->Reset(g_LastTime);
+		g_AnimationShip3->Reset(g_LastTime);
+		g_AnimationShip4->Reset(g_LastTime);
+	}
 }
 
 void Project_WindowMouseWheel(MouseEventArgs &args)
@@ -605,8 +689,13 @@ bool Project_Initialize(Window *window)
 		LOG_INFO("Sim", "Solar System Animation");
 		LOG_INFO("Sim", "Instructions:");
 		LOG_INFO("Sim", "- Press 'c' to stop camera rotation");
-		LOG_INFO("Sim", "- Press left/right to navigate through the planets/stars");
-		LOG_INFO("Sim", "- Use the mouse wheel to zoom in/out of the planet/star");
+		LOG_INFO("Sim", "- Press 'r' to reset animations");
+		LOG_INFO("Sim", "- Press left/right to navigate through the planets/stars/ships");
+		LOG_INFO("Sim", "- Use the mouse wheel to zoom in/out of the planet/star/ship");
+
+		LOG_INFO("Sim", "Available models: ");
+		for (size_t i = 0; i < g_Models.size(); i++)
+			LOG_INFO("Sim", "- %u: %s", i, g_Models[i]->GetName().c_str());
 	}
 	catch (ShaderCompileException &ex)
 	{
@@ -628,7 +717,10 @@ bool Project_Initialize(Window *window)
 
 bool Project_Shutdown()
 {
-	Delete(g_AnimationPlayer);
+	Delete(g_AnimationShip4);
+	Delete(g_AnimationShip3);
+	Delete(g_AnimationShip2);
+	Delete(g_AnimationShip1);
 
 	Delete(g_StarMesh);
 	Delete(g_StarMaterial);

@@ -46,7 +46,10 @@ public:
 	Animation(Transform *transform);
 
 	Transform *GetTransform() const;
+	
 	Transform *GetOriginalTransform();
+	void SetOriginalTransform(const Transform *t);
+
 	bool IsStarted() const;
 	bool IsAnimating() const;
 

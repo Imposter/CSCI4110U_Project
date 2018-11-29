@@ -21,6 +21,11 @@ Transform *Animation::GetOriginalTransform()
 	return &m_Original;
 }
 
+void Animation::SetOriginalTransform(const Transform *t)
+{
+	m_Original = *t;
+}
+
 bool Animation::IsStarted() const
 {
 	return m_Started;
@@ -207,10 +212,16 @@ void AnimationContainer::Update(float time)
 
 	if (!m_Simultaneous)
 	{
-		const auto anim = m_Animations[m_Index];
-		if (!anim->IsAnimating()) m_Index++;
+		auto anim = m_Animations[m_Index];
+		if (!anim->IsAnimating()) ++m_Index;
 		if (m_Index > m_Animations.size() - 1)
+		{
 			m_Animating = false;
+			return;
+		}
+
+		const auto nextAnim = m_Animations[m_Index];
+		nextAnim->SetOriginalTransform(anim->GetOriginalTransform());
 	}
 }
 
